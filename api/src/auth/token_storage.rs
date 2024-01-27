@@ -37,7 +37,7 @@ impl TokenStorage {
 	}
 	pub fn filter(&self, max_age : u64) {
 		let tm = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
-		self.map.lock().unwrap().retain(|&token, _| {
+		self.map.lock().unwrap().retain(|&token, _mail| {
 			let tmb = &token[8..16];
 			let timestamp = u64::from_le_bytes([tmb[0], tmb[1], tmb[2], tmb[3], tmb[4], tmb[5], tmb[6], tmb[7]]);
 			timestamp + max_age >= tm

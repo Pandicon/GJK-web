@@ -44,9 +44,7 @@ async fn main() {
 				// .layer(axum::middleware::from_fn_with_state(17, permissions_middleware::check_permissions)),
 		);
 	}
-	#[allow(unused_variables)]
-	let mut token_filter_thread = None; // for scoping, maybe this should be done through lifetimes?
-	#[allow(unused_assignments)]
+	let mut _token_filter_thread = None; // for scoping, maybe this should be done through lifetimes?
 	if oauth_config.enabled {
 		app = app.route(
 			"/auth/oauth",
@@ -64,10 +62,10 @@ async fn main() {
 				}
 			}),
 		);
-		token_filter_thread = Some(std::thread::spawn(move || {
+		_token_filter_thread = Some(std::thread::spawn(move || {
 			loop {
 				tracing::info!("filtering tokens...");
-				TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().filter(3600 * 24 * 100); // TODO: test the filtering :D
+				TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().filter(3600 * 24 * 100);
 				std::thread::sleep(std::time::Duration::from_secs(3600 * 12));
 			}
 		}));
