@@ -37,8 +37,11 @@ fn main() {
 					}
 				}
 			}
-			if route.is_empty() || req_type.is_empty() || (req_type != "get" && req_type != "post") {
-				return;
+			if route.is_empty() {
+				panic!("ROUTE is empty in file {:?}", path.file_stem().unwrap_or_default());
+			}
+			if req_type.is_empty() || (req_type != "get" && req_type != "post") {
+				panic!("Invalid TYPE for route '{route}'. Expected 'GET' or 'POST', got '{req_type}'");
 			}
 			routes.push(route.clone());
 
