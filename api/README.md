@@ -16,3 +16,16 @@ pub async fn callback() -> &'static str {
 }
 ```
 This creates a root "get" route which responds with "Hi".
+
+To limit access to the endpoint based on permissions, you can add a `PERMISSIONS` (or `_PERMISSIONS`) constant in the form of `PERMISSION1 | PERMISSION2 | ...` which would lead to the endpoint requiring all the permissions in the string. If the constant is not present, it defaults to an open endpoint (no permissions, same as adding `PERMISSIONS = "NONE"`).
+
+An example, where the user is required to have the `READ_SUBSTITUTIONS` and `READ_SCHEDULES` permissions:
+```
+pub const _PERMISSIONS: &'static str = "READ_SUBSTITUTIONS | READ_SCHEDULES";
+pub const _ROUTE: &'static str = "/";
+pub const _TYPE: &'static str = "GET";
+
+pub async fn callback() -> &'static str {
+	"Hi"
+}
+```
