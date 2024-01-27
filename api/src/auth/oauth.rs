@@ -2,20 +2,20 @@ use crate::auth;
 
 #[derive(serde::Deserialize)]
 pub struct OAuthCode {
-	pub code : String,
-	pub state : String
+	pub code: String,
+	pub state: String,
 }
 #[derive(serde::Deserialize)]
 pub struct OAuthTokens {
-	pub access_token : String,
-	pub id_token : String
+	pub access_token: String,
+	pub id_token: String,
 }
 #[derive(serde::Deserialize)]
 pub struct UserInfo {
-	pub email : String
+	pub email: String,
 }
 
-pub async fn get_token(auth_code : &str, cfg : &auth::config::OAuthConfig) -> Result<OAuthTokens, Box<dyn std::error::Error>> {
+pub async fn get_token(auth_code: &str, cfg: &auth::config::OAuthConfig) -> Result<OAuthTokens, Box<dyn std::error::Error>> {
 	let root_url = "https://oauth2.googleapis.com/token";
 	let client = reqwest::Client::new();
 	let params = [
@@ -34,7 +34,7 @@ pub async fn get_token(auth_code : &str, cfg : &auth::config::OAuthConfig) -> Re
 	}
 }
 
-pub async fn get_user_info(tokens : &OAuthTokens) -> Result<UserInfo, Box<dyn std::error::Error>> {
+pub async fn get_user_info(tokens: &OAuthTokens) -> Result<UserInfo, Box<dyn std::error::Error>> {
 	let client = reqwest::Client::new();
 	let mut url = reqwest::Url::parse("https://www.googleapis.com/oauth2/v1/userinfo").unwrap();
 	url.query_pairs_mut().append_pair("alt", "json");
@@ -48,7 +48,7 @@ pub async fn get_user_info(tokens : &OAuthTokens) -> Result<UserInfo, Box<dyn st
 	}
 }
 
-pub async fn get_email_from_code(code : &str, cfg : &auth::config::OAuthConfig) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn get_email_from_code(code: &str, cfg: &auth::config::OAuthConfig) -> Result<String, Box<dyn std::error::Error>> {
 	let token = get_token(code, cfg).await?;
 	let ui = get_user_info(&token).await?;
 	Ok(ui.email)
