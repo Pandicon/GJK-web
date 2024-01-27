@@ -22,7 +22,6 @@ pub fn parse(data : &str) -> Option<(Table, usize)> {
 		}
 		e = i;
 	}}
-	//println!("table: [{}]", &data[..e]);
 	let mut t = Table{ cells: vec![] };
 	let mut i : usize = 0;
 	let mut sz : usize = 0;

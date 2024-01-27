@@ -142,7 +142,7 @@ fn parse_table(sup : &mut Supl, tm : &Timestamp, data : &str) -> Option<usize> {
 			}
 		}
 	} else {
-		println!("Unknown table: [{}]", table_id);
+		tracing::warn!("Unknown table: [{}]", table_id);
 	}
 	Some(e)
 }
@@ -161,25 +161,25 @@ fn iter_tables(sup : &mut Supl, tm : &Timestamp, data : &str) {
 }
 fn parse_data(sup : &mut Supl, tm : &Timestamp, data : &str) {
 	if let Some(title) = find_title(data) {
-		println!("parsing [{}]", title.0);
+		tracing::info!("parsing [{}]", title.0);
 		iter_tables(sup, tm, &data[title.1..]);
 	} else {
-		println!("Could not find title!");
+		tracing::error!("Could not find title!");
 	}
 }
 fn handle_resp(sm : &mut SuplMap, res_w : Result<reqwest::blocking::Response, reqwest::Error>) -> Option<u64> {
 	if res_w.is_err() {
-		eprintln!("Request failed!");
+		tracing::error!("Supl request failed!");
 		return None;
 	}
 	let res = unsafe { res_w.unwrap_unchecked() };
 	if res.status() != 200 {
-		eprintln!("Request returned non-OK code ({})!", res.status());
+		tracing::error!("Supl request returned non-OK code ({})!", res.status());
 		return None;
 	}
 	let bytes = res.bytes();
 	if bytes.is_err() {
-		eprintln!("Couldn't get bytes from response!");
+		tracing::error!("Supl couldn't get bytes from response!");
 		return None;
 	}
 	if let Ok(data) = std::str::from_utf8(&unsafe { bytes.unwrap_unchecked() }) {
@@ -189,7 +189,7 @@ fn handle_resp(sm : &mut SuplMap, res_w : Result<reqwest::blocking::Response, re
 		parse_data(sm.days.entry(day_id).or_insert_with(Supl::new), &curr_time, data);
 		Some(res)
 	} else {
-		eprintln!("Bad data format!");
+		tracing::error!("Supl - bad data format!");
 		None
 	}
 }
