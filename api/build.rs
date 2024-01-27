@@ -64,7 +64,7 @@ fn main() {
 					if val == 0 {
 						continue;
 					}
-					permissions |= 1 << (val - 1);
+					permissions |= val;
 				} else {
 					panic!("Invalid permission flag '{flag}' in route '{route}'");
 				}
