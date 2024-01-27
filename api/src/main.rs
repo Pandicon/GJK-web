@@ -1,5 +1,6 @@
 use axum::routing;
 
+mod auth;
 mod config;
 mod permissions_middleware;
 mod routes;
@@ -20,6 +21,7 @@ async fn main() {
 	tracing_subscriber::fmt::init();
 
 	let config = config::get_config();
+	let oauth_config = auth::config::get_oauth();
 
 	let mut app = include!(concat!(std::env!("OUT_DIR"), "/router.rs"));
 
@@ -35,6 +37,17 @@ async fn main() {
 		}), //TODO: Specify permissions
 		    // .layer(axum::middleware::from_fn_with_state(17, permissions_middleware::check_permissions)),
 	);
+	if oauth_config.enabled {
+		app = app.route(
+			"/auth/oauth",
+			routing::get(|code: axum::extract::Query<auth::oauth::OAuthCode>| async move {
+				match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
+					Ok(s) => tracing::info!("Google said that user {} authorized this with state {}!", s, code.state),
+					Err(e) => tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state),
+				};
+			}),
+		);
+	}
 
 	let ip_and_port = config.ip + ":" + &config.port;
 	let listener = tokio::net::TcpListener::bind(&ip_and_port).await.unwrap();
