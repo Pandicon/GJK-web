@@ -1,17 +1,26 @@
 const ROUTES_FOLDER: &str = "./src/routes";
 
+pub fn get_permissions_flags() -> std::collections::HashMap<String, u32> {
+	let path = "./permission_flags.json";
+	let data = std::fs::read_to_string(path).unwrap_or_else(|_| panic!("Unable to read the {:?} file.", path));
+	let res: std::collections::HashMap<String, u32> = serde_json::from_str(&data).expect("Unable to parse the permission flags file.");
+	res
+}
+
 fn main() {
+	let permissions_flags = get_permissions_flags();
+
 	let out_dir = std::env::var("OUT_DIR").unwrap();
 	let mut output = String::from("axum::Router::new()");
 	let mut routes = vec![];
 
-	fn read_folder(path: &std::path::Path, routes: &mut Vec<String>, output: &mut String) {
+	fn read_folder(path: &std::path::Path, routes: &mut Vec<String>, output: &mut String, permissions_flags: &std::collections::HashMap<String, u32>) {
 		if path.is_dir() {
 			if let Ok(entries) = std::fs::read_dir(path) {
 				for entry in entries {
 					if let Ok(entry) = entry {
 						let path = entry.path();
-						read_folder(&path, routes, output);
+						read_folder(&path, routes, output, permissions_flags);
 					}
 				}
 			}
@@ -19,8 +28,9 @@ fn main() {
 			let contents = std::fs::read_to_string(&path).unwrap();
 			let mut route = String::from("");
 			let mut req_type = String::from("");
+			let mut permissions_vec: Vec<String> = vec![];
 			for line in contents.lines() {
-				if line.contains("ROUTE") {
+				if line.contains("ROUTE") && route.is_empty() {
 					let value = line.split('=').nth(1).unwrap().trim().replace("\"", "");
 					if value.ends_with(";") {
 						route = String::from(value.strip_suffix(";").unwrap());
@@ -28,7 +38,7 @@ fn main() {
 						route = value;
 					}
 				}
-				if line.contains("TYPE") {
+				if line.contains("TYPE") && req_type.is_empty() {
 					let value = line.split('=').nth(1).unwrap().trim().to_lowercase().replace("\"", "");
 					if value.ends_with(";") {
 						req_type = String::from(value.strip_suffix(";").unwrap());
@@ -36,12 +46,28 @@ fn main() {
 						req_type = value;
 					}
 				}
+				if line.contains("PERMISSIONS") && permissions_vec.is_empty() {
+					let value = line.split('=').nth(1).unwrap().trim().to_uppercase().replace("\"", "");
+					let val = if value.ends_with(";") { String::from(value.strip_suffix(";").unwrap()) } else { value };
+					permissions_vec = val.split("|").map(|p| p.trim().to_owned()).collect();
+				}
 			}
 			if route.is_empty() {
 				panic!("ROUTE is empty in file {:?}", path.file_stem().unwrap_or_default());
 			}
 			if req_type.is_empty() || (req_type != "get" && req_type != "post") {
 				panic!("Invalid TYPE for route '{route}'. Expected 'GET' or 'POST', got '{req_type}'");
+			}
+			let mut permissions: u32 = 0;
+			for flag in permissions_vec {
+				if let Some(&val) = permissions_flags.get(&flag) {
+					if val == 0 {
+						continue;
+					}
+					permissions |= 1 << (val - 1);
+				} else {
+					panic!("Invalid permission flag '{flag}' in route '{route}'");
+				}
 			}
 			routes.push(route.clone());
 
@@ -51,19 +77,29 @@ fn main() {
 				.replace("\\", "/")
 				.replace("/", "::");
 			*output += format!(
-				".route(\"{route}\", axum::routing::{req_type}({modules_prefix}::{}::callback))",
+				".route(\"{route}\", axum::routing::{req_type}({modules_prefix}::{}::callback).layer(axum::middleware::from_fn_with_state({permissions}, permissions_middleware::check_permissions)))",
 				path.file_stem().unwrap().to_str().unwrap()
 			)
 			.as_str();
 		}
 	}
 
-	read_folder(std::path::Path::new(ROUTES_FOLDER), &mut routes, &mut output);
+	read_folder(std::path::Path::new(ROUTES_FOLDER), &mut routes, &mut output, &permissions_flags);
 
 	std::fs::write(std::path::Path::new(&out_dir).join("router.rs"), format!("{{{output}}}")).unwrap();
 	std::fs::write(
 		std::path::Path::new(&out_dir).join("routes.rs"),
 		format!("const GENERATED_ROUTES: &'static str = \"{}\";", routes.join(" | ")),
+	)
+	.unwrap();
+	let mut codegen_map = phf_codegen::Map::new();
+	let mut codegen_map = &mut codegen_map;
+	for (key, value) in permissions_flags.iter() {
+		codegen_map = codegen_map.entry(key, &value.to_string());
+	}
+	std::fs::write(
+		std::path::Path::new(&out_dir).join("permission_flags.rs"),
+		format!("pub static PERMISSION_FLAGS: phf::Map<&'static str, u32> = {};", codegen_map.build()),
 	)
 	.unwrap();
 }

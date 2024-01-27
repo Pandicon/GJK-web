@@ -1,15 +1,18 @@
 use axum::routing;
 
 mod config;
+mod permissions_middleware;
 mod routes;
 mod suplovani;
 
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
 
+include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
 include!(concat!(std::env!("OUT_DIR"), "/routes.rs"));
 
 #[tokio::main]
 async fn main() {
+	println!("{:?}", PERMISSION_FLAGS);
 	dotenv::dotenv().ok();
 	if std::env::var("RUST_LOG").is_err() {
 		std::env::set_var("RUST_LOG", "INFO");
@@ -29,7 +32,8 @@ async fn main() {
 		routing::get(|| async {
 			let j = SUPL.lock().unwrap().as_ref().unwrap().get_json();
 			([(axum::http::header::CONTENT_TYPE, "text/json")], j)
-		}),
+		}), //TODO: Specify permissions
+		    // .layer(axum::middleware::from_fn_with_state(17, permissions_middleware::check_permissions)),
 	);
 
 	let ip_and_port = config.ip + ":" + &config.port;

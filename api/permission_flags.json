@@ -1,0 +1,5 @@
+{
+	"NONE": 0,
+	"READ_SUBSTITUTIONS": 1,
+	"READ_SCHEDULES": 2
+}
