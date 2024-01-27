@@ -51,13 +51,39 @@ async fn main() {
 			routing::get(|code: axum::extract::Query<auth::oauth::OAuthCode>| async move {
 				match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
 					Ok(mail) => {
-						tracing::info!("user {} logged in", mail);
+						if mail.ends_with("@gjk.cz") {
+							let perms = USER_DB.lock().unwrap().as_ref().unwrap().get_perms_or_add_with(&mail, *crate::PERMISSION_FLAGS.get("GJK_DEFAULT").unwrap());
+							match perms {
+								Ok(p) => { tracing::info!("gjk user {} logged in with perms {}", mail, p); },
+								Err(e) => {
+									tracing::error!("gjk user {} logged in, but the server couldn't get perms: {}", mail, e);
+									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find or create user.").into_response()
+								}
+							}
+						} else {
+							let perms = USER_DB.lock().unwrap().as_ref().unwrap().get_perms_opt(&mail);
+							match perms {
+								Ok(po) => {
+									match po {
+										Some(p) => tracing::info!("non-gjk user {} logged in with perms {}", mail, p),
+										None => {
+											tracing::info!("non-gjk user {} can't log in without pre-existing user", mail);
+											return (axum::http::StatusCode::FORBIDDEN, format!("e-mail {} isn't registered", mail)).into_response()
+										}
+									}
+								},
+								Err(e) => {
+									tracing::error!("non-gjk user {} logged in, but the server couldn't get perms: {}", mail, e);
+									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find user.").into_response()
+								}
+							}
+						}
 						let tokenstr = auth::token_storage::token_to_str(&TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().create(&mail));
 						([(axum::http::header::CONTENT_TYPE, "text/json")], "{".to_owned()+&format!("\"token\":\"{}\"", tokenstr)+"}").into_response()
 					},
 					Err(e) => {
 						tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state);
-						(axum::http::StatusCode::BAD_REQUEST, "Code is missing").into_response()
+						(axum::http::StatusCode::BAD_REQUEST, "Error occured during OAuth.").into_response()
 					}
 				}
 			}),

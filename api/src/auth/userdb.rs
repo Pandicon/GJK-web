@@ -37,6 +37,15 @@ impl UserDB {
 		}
 		Err(format!("User with mail {} doesn't exist.", mail).into())
 	}
+	pub fn get_perms_opt(&self, mail : &str) -> Result<Option<u32>, Box<dyn std::error::Error>> {
+		let q = "SELECT * FROM user WHERE mail = ?;";
+		let mut s = self.con.prepare(q)?;
+		s.bind((1, mail))?;
+		if let Ok(sqlite::State::Row) = s.next() {
+			return Ok(Some(s.read::<i64, _>("perms")? as u32));
+		}
+		Ok(None)
+	}
 	pub fn get_perms_or_add_with(&self, mail : &str, create_perms : u32) -> Result<u32, Box<dyn std::error::Error>> {
 		let q = "SELECT * FROM user WHERE mail = ?;";
 		let mut s = self.con.prepare(q)?;
