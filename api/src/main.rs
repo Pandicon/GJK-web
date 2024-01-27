@@ -2,6 +2,7 @@ use axum::routing;
 
 mod config;
 mod routes;
+mod auth;
 mod suplovani;
 
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
@@ -17,6 +18,7 @@ async fn main() {
 	tracing_subscriber::fmt::init();
 
 	let config = config::get_config();
+	let oauth_config = auth::config::get_oauth();
 
 	let mut app = include!(concat!(std::env!("OUT_DIR"), "/router.rs"));
 
@@ -24,13 +26,18 @@ async fn main() {
 	*SUPL.lock().unwrap() = Some(suplovani::Suplovani::new());
 	SUPL.lock().unwrap().as_mut().unwrap().load();
 	SUPL.lock().unwrap().as_mut().unwrap().start_thread(std::time::Duration::from_secs(900));
-	app = app.route(
-		"/supl",
-		routing::get(|| async {
-			let j = SUPL.lock().unwrap().as_ref().unwrap().get_json();
-			([(axum::http::header::CONTENT_TYPE, "text/json")], j)
-		}),
-	);
+	app = app.route("/supl", routing::get(|| async {
+		let j = SUPL.lock().unwrap().as_ref().unwrap().get_json();
+		([(axum::http::header::CONTENT_TYPE, "text/json")], j)
+	}));
+	if oauth_config.enabled {
+		app = app.route("/auth/oauth", routing::get(|code : axum::extract::Query<auth::oauth::OAuthCode>| async move {
+			match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
+				Ok(s) => tracing::info!("Google said that user {} authorized this with state {}!", s, code.state),
+				Err(e) => tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state)
+			};
+		}));
+	}
 
 	let ip_and_port = config.ip + ":" + &config.port;
 	let listener = tokio::net::TcpListener::bind(&ip_and_port).await.unwrap();
