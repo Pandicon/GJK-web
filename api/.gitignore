@@ -16,4 +16,6 @@ Cargo.lock
 
 suplbackup/
 oauth.json
+userdb.db
 link
+/client/

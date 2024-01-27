@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
 	pub ip: String,
 	pub port: String,
+	pub supl_fetch_enabled: bool
 }
 
 pub fn get_config() -> Config {
