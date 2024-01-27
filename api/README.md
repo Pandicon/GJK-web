@@ -29,3 +29,9 @@ pub async fn callback() -> &'static str {
 	"Hi"
 }
 ```
+
+## Building and running
+The project can be simply ran via `cargo run` or `cargo run --release`. However, you may need to install/build sqlite.
+
+### Building SQLite on Windows
+Basically follow [this](https://gist.github.com/zeljic/d8b542788b225b1bcb5fce169ee28c55) gist. Once you build the `.lib` file, copy it into a folder where you will put all other `.lib` files in the future (`C:\libs` for the sake of example). Then create a new environment variable called `LIB` and set it to the path to the folder you just created (for example `C:\libs`). If you already have a folder like this, just put the `sqlite.lib` file there.
