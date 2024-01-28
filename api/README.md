@@ -1,5 +1,9 @@
 # GJK web API
 
+## API doc
+
+api doc is in [doc subfolder](doc/)
+
 ## Adding routes
 There are two main ways of adding new routes - either through creating a new route on the `app` object in `main.rs` directly, or creating a new file in the `src/routes` folder (the build script will then take care of the rest). It is also possible to have files in nested folders (`src/routes/news`) and names do not matter at all (the name just can not be `mod.rs` - those files are ignored as they should only be used to bring the other paths into the Cargo project).
 If you choose to add a route by adding a file to the `routes` folder, it has to follow these guidelines:
