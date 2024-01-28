@@ -8,11 +8,11 @@ pub async fn callback(request : axum::extract::Request) -> axum::response::Respo
 	if let Some(token) = crate::auth::token_from_headers(&request) {
 		let ts = crate::TOKEN_STORAGE.lock().unwrap();
 		if ts.as_ref().unwrap().remove(&token) {
-			([(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"logged out successfuly\"}").into_response()
+			([(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"logged out successfuly\"}").into_response()
 		} else {
-			(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"token is invalid\"}").into_response()
+			(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"token is invalid\"}").into_response()
 		}
 	} else {
-		(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"token not found in headers\"}").into_response()
+		(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"token not found in headers\"}").into_response()
 	}
 }

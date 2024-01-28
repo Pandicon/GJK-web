@@ -9,14 +9,14 @@ pub async fn callback(request : axum::extract::Request) -> axum::response::Respo
 		let ts = crate::TOKEN_STORAGE.lock().unwrap();
 		if let Some(mail) = ts.as_ref().unwrap().get(&token) {
 			if ts.as_ref().unwrap().remove_all(&mail) {
-				([(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"logged out successfuly\"}").into_response()
+				([(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"logged out successfuly\"}").into_response()
 			} else {
-				(axum::http::StatusCode::INTERNAL_SERVER_ERROR, [(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"mail is invalid\"}").into_response()
+				(axum::http::StatusCode::INTERNAL_SERVER_ERROR, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"mail is invalid\"}").into_response()
 			}
 		} else {
-			(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"token is invalid\"}").into_response()
+			(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"token is invalid\"}").into_response()
 		}
 	} else {
-		(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "text/json")], "{\"message\":\"token not found in headers\"}").into_response()
+		(axum::http::StatusCode::BAD_REQUEST, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"token not found in headers\"}").into_response()
 	}
 }

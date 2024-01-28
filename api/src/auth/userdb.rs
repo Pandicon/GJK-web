@@ -81,6 +81,14 @@ impl UserDB {
 		})?;
 		Ok(())
 	}
+	pub fn get(&self) -> Result<std::vec::Vec<(String, u32)>, Box<dyn std::error::Error>> {
+		let mut out = vec![];
+		let mut s = self.con.prepare("SELECT * FROM user;")?;
+		while let Ok(sqlite::State::Row) = s.next() {
+			out.push((s.read::<String, _>("mail").unwrap(), s.read::<i64, _>("perms").unwrap() as u32));
+		}
+		Ok(out)
+	}
 }
 impl Default for UserDB {
 	fn default() -> Self {

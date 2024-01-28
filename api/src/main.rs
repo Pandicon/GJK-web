@@ -40,7 +40,7 @@ async fn main() {
 			"/supl",
 			routing::get(|| async {
 				let j = SUPL.lock().unwrap().as_ref().unwrap().get_json();
-				([(axum::http::header::CONTENT_TYPE, "text/json")], j)
+				([(axum::http::header::CONTENT_TYPE, "application/json")], j)
 			})
 			.layer(axum::middleware::from_fn_with_state(
 				*PERMISSION_FLAGS.get("READ_SUBSTITUTIONS").unwrap(),
@@ -95,7 +95,7 @@ async fn main() {
 							}
 						}
 						let tokenstr = auth::token_storage::token_to_str(&ts.as_ref().unwrap().create(&mail));
-						([(axum::http::header::CONTENT_TYPE, "text/json")], "{".to_owned() + &format!("\"token\":\"{}\"", tokenstr) + "}").into_response()
+						([(axum::http::header::CONTENT_TYPE, "application/json")], "{".to_owned() + &format!("\"token\":\"{}\"", tokenstr) + "}").into_response()
 					}
 					Err(e) => {
 						tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state);
