@@ -103,6 +103,11 @@ async fn main() {
 		}));
 	}
 
+	let cors = tower_http::cors::CorsLayer::new()
+		.allow_methods([http::Method::GET, http::Method::POST])
+		.allow_origin(tower_http::cors::Any);
+	app = app.layer(cors);
+
 	let ip_and_port = config.ip + ":" + &config.port;
 	let listener = tokio::net::TcpListener::bind(&ip_and_port).await.unwrap();
 	tracing::info!("Listening on {}", ip_and_port);
