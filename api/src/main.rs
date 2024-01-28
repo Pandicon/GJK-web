@@ -27,6 +27,7 @@ async fn main() {
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
+	USER_DB.lock().unwrap().as_ref().unwrap().print().unwrap();
 
 	let mut app = include!(concat!(std::env!("OUT_DIR"), "/router.rs"));
 
