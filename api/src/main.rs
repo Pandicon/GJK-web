@@ -1,9 +1,11 @@
 use axum::{response::IntoResponse, routing};
+use lazy_static::lazy_static;
 
 mod auth;
 mod config;
 mod permissions_middleware;
 mod routes;
+mod structs;
 mod suplovani;
 
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
@@ -11,11 +13,11 @@ pub static USER_DB: std::sync::Mutex<std::option::Option<auth::userdb::UserDB>> 
 pub static TOKEN_STORAGE: std::sync::Mutex<std::option::Option<auth::token_storage::TokenStorage>> = std::sync::Mutex::new(None);
 
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
+include!(concat!(std::env!("OUT_DIR"), "/permission_flags_info.rs"));
 include!(concat!(std::env!("OUT_DIR"), "/routes.rs"));
 
 #[tokio::main]
 async fn main() {
-	println!("{:?}", PERMISSION_FLAGS);
 	dotenv::dotenv().ok();
 	if std::env::var("RUST_LOG").is_err() {
 		std::env::set_var("RUST_LOG", "INFO");
@@ -120,6 +122,11 @@ async fn main() {
 	let listener = tokio::net::TcpListener::bind(&ip_and_port).await.unwrap();
 	tracing::info!("Listening on {}", ip_and_port);
 	tracing::info!("Generated routes: {}", GENERATED_ROUTES);
+	tracing::info!("Permission flags: {:#?}", PERMISSION_FLAGS);
+	tracing::info!(
+		"Permission flags info: {:#?}",
+		PERMISSION_FLAGS_INFO.iter().collect::<Vec<&crate::structs::permission_flags_info::PermissionFlagsInfo>>()
+	); // This is due to the PERMISSION_FLAGS_INFO variable being initialised via lazy_static!, so the type is a bit weird I suppose. But it should behave just as a normal Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> in other cases.
 
 	axum::serve(listener, app).await.unwrap();
 }

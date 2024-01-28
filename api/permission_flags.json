@@ -1,8 +1,28 @@
 {
-	"NONE": 0,
-	"READ_SUBSTITUTIONS": 1,
-	"READ_SCHEDULES": 2,
-	"MANAGE_USERS": 4,
+	"NONE": {
+		"permissions": 0,
+		"display_name": "Žádné",
+		"description": "Žádná oprávnění"
+	},
+	"READ_SUBSTITUTIONS": {
+		"permissions": 1,
+		"display_name": "Zobrazit suplování",
+		"description": "Umožňuje uživatelům zobrazit suplování"
+	},
+	"READ_SCHEDULES": {
+		"permissions": 2,
+		"display_name": "Zobrazit rozvrhy",
+		"description": "Umožňuje uživatelům zobrazit rozvrhy"
+	},
+	"MANAGE_USERS": {
+		"permissions": 4,
+		"display_name": "Upravovat uživatele",
+		"description": "Umožňuje uživatelům upravovat jiné uživatele (měnit práva, přidávat či odebírat jim přístup, ...)"
+	},
 
-	"GJK_DEFAULT": 3
+	"GJK_DEFAULT": {
+		"permissions": 3,
+		"display_name": "Základní GJK uživatel",
+		"description": "Výchozí oprávnění pro uživatele s GJK emailem"
+	}
 }

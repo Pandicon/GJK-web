@@ -1,9 +1,18 @@
+use serde::Deserialize;
+
 const ROUTES_FOLDER: &str = "./src/routes";
 
-pub fn get_permissions_flags() -> std::collections::HashMap<String, u32> {
+#[derive(Deserialize)]
+struct PermissionFlagsInfo {
+	permissions: u32,
+	display_name: String,
+	description: String,
+}
+
+fn get_permissions_flags() -> std::collections::HashMap<String, PermissionFlagsInfo> {
 	let path = "./permission_flags.json";
 	let data = std::fs::read_to_string(path).unwrap_or_else(|_| panic!("Unable to read the {:?} file.", path));
-	let res: std::collections::HashMap<String, u32> = serde_json::from_str(&data).expect("Unable to parse the permission flags file.");
+	let res: std::collections::HashMap<String, PermissionFlagsInfo> = serde_json::from_str(&data).expect("Unable to parse the permission flags file.");
 	res
 }
 
@@ -14,7 +23,7 @@ fn main() {
 	let mut output = String::from("axum::Router::new()");
 	let mut routes = vec![];
 
-	fn read_folder(path: &std::path::Path, routes: &mut Vec<String>, output: &mut String, permissions_flags: &std::collections::HashMap<String, u32>) {
+	fn read_folder(path: &std::path::Path, routes: &mut Vec<String>, output: &mut String, permissions_flags: &std::collections::HashMap<String, PermissionFlagsInfo>) {
 		if path.is_dir() {
 			if let Ok(entries) = std::fs::read_dir(path) {
 				for entry in entries.flatten() {
@@ -58,11 +67,11 @@ fn main() {
 			}
 			let mut permissions: u32 = 0;
 			for flag in permissions_vec {
-				if let Some(&val) = permissions_flags.get(&flag) {
-					if val == 0 {
+				if let Some(flag_info) = permissions_flags.get(&flag) {
+					if flag_info.permissions == 0 {
 						continue;
 					}
-					permissions |= val;
+					permissions |= flag_info.permissions;
 				} else {
 					panic!("Invalid permission flag '{flag}' in route '{route}'");
 				}
@@ -88,12 +97,27 @@ fn main() {
 	std::fs::write(std::path::Path::new(&out_dir).join("routes.rs"), format!("const GENERATED_ROUTES: &str = \"{}\";", routes.join(" | "))).unwrap();
 	let mut codegen_map = phf_codegen::Map::new();
 	let mut codegen_map = &mut codegen_map;
-	for (key, value) in permissions_flags.iter() {
-		codegen_map = codegen_map.entry(key, &value.to_string());
+	for (flag, flag_info) in permissions_flags.iter() {
+		codegen_map = codegen_map.entry(flag, &flag_info.permissions.to_string());
 	}
 	std::fs::write(
 		std::path::Path::new(&out_dir).join("permission_flags.rs"),
 		format!("pub static PERMISSION_FLAGS: phf::Map<&'static str, u32> = {};", codegen_map.build()),
+	)
+	.unwrap();
+	std::fs::write(
+		std::path::Path::new(&out_dir).join("permission_flags_info.rs"),
+		format!(
+			"lazy_static! {{pub static ref PERMISSION_FLAGS_INFO: Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> = {{ let mut unsorted_vec = vec![{}]; unsorted_vec.sort_by(|a, b| a.get_flag().to_uppercase().cmp(&b.get_flag().to_uppercase())); unsorted_vec }};}}",
+			permissions_flags
+				.iter()
+				.map(|(flag, flag_info)| format!(
+					"crate::structs::permission_flags_info::PermissionFlagsInfo::new(String::from(\"{}\"), {}, String::from(\"{}\"), String::from(\"{}\"))",
+					flag, flag_info.permissions, flag_info.display_name, flag_info.description
+				))
+				.collect::<Vec<String>>()
+				.join(", ")
+		),
 	)
 	.unwrap();
 }

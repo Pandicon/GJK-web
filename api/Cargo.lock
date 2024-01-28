@@ -49,6 +49,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "http 1.0.0",
+ "lazy_static",
  "phf",
  "phf_codegen",
  "rand",
