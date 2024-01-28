@@ -40,8 +40,11 @@ async fn main() {
 			routing::get(|| async {
 				let j = SUPL.lock().unwrap().as_ref().unwrap().get_json();
 				([(axum::http::header::CONTENT_TYPE, "text/json")], j)
-			}), //TODO: Specify permissions
-				// .layer(axum::middleware::from_fn_with_state(17, permissions_middleware::check_permissions)),
+			})
+			.layer(axum::middleware::from_fn_with_state(
+				*PERMISSION_FLAGS.get("READ_SUBSTITUTIONS").unwrap(),
+				permissions_middleware::check_permissions,
+			)),
 		);
 	}
 	let mut _token_filter_thread = None; // for scoping, maybe this should be done through lifetimes?
@@ -52,35 +55,40 @@ async fn main() {
 				match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
 					Ok(mail) => {
 						if mail.ends_with("@gjk.cz") {
-							let perms = USER_DB.lock().unwrap().as_ref().unwrap().get_perms_or_add_with(&mail, *crate::PERMISSION_FLAGS.get("GJK_DEFAULT").unwrap());
+							let perms = USER_DB
+								.lock()
+								.unwrap()
+								.as_ref()
+								.unwrap()
+								.get_perms_or_add_with(&mail, *crate::PERMISSION_FLAGS.get("GJK_DEFAULT").unwrap());
 							match perms {
-								Ok(p) => { tracing::info!("gjk user {} logged in with perms {}", mail, p); },
+								Ok(p) => {
+									tracing::info!("gjk user {} logged in with perms {}", mail, p);
+								}
 								Err(e) => {
 									tracing::error!("gjk user {} logged in, but the server couldn't get perms: {}", mail, e);
-									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find or create user.").into_response()
+									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find or create user.").into_response();
 								}
 							}
 						} else {
 							let perms = USER_DB.lock().unwrap().as_ref().unwrap().get_perms_opt(&mail);
 							match perms {
-								Ok(po) => {
-									match po {
-										Some(p) => tracing::info!("non-gjk user {} logged in with perms {}", mail, p),
-										None => {
-											tracing::info!("non-gjk user {} can't log in without pre-existing user", mail);
-											return (axum::http::StatusCode::FORBIDDEN, format!("e-mail {} isn't registered", mail)).into_response()
-										}
+								Ok(po) => match po {
+									Some(p) => tracing::info!("non-gjk user {} logged in with perms {}", mail, p),
+									None => {
+										tracing::info!("non-gjk user {} can't log in without pre-existing user", mail);
+										return (axum::http::StatusCode::FORBIDDEN, format!("e-mail {} isn't registered", mail)).into_response();
 									}
 								},
 								Err(e) => {
 									tracing::error!("non-gjk user {} logged in, but the server couldn't get perms: {}", mail, e);
-									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find user.").into_response()
+									return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Couldn't find user.").into_response();
 								}
 							}
 						}
 						let tokenstr = auth::token_storage::token_to_str(&TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().create(&mail));
-						([(axum::http::header::CONTENT_TYPE, "text/json")], "{".to_owned()+&format!("\"token\":\"{}\"", tokenstr)+"}").into_response()
-					},
+						([(axum::http::header::CONTENT_TYPE, "text/json")], "{".to_owned() + &format!("\"token\":\"{}\"", tokenstr) + "}").into_response()
+					}
 					Err(e) => {
 						tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state);
 						(axum::http::StatusCode::BAD_REQUEST, "Error occured during OAuth.").into_response()
@@ -88,12 +96,10 @@ async fn main() {
 				}
 			}),
 		);
-		_token_filter_thread = Some(std::thread::spawn(move || {
-			loop {
-				tracing::info!("filtering tokens...");
-				TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().filter(3600 * 24 * 100);
-				std::thread::sleep(std::time::Duration::from_secs(3600 * 12));
-			}
+		_token_filter_thread = Some(std::thread::spawn(move || loop {
+			tracing::info!("filtering tokens...");
+			TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().filter(3600 * 24 * 100);
+			std::thread::sleep(std::time::Duration::from_secs(3600 * 12));
 		}));
 	}
 
