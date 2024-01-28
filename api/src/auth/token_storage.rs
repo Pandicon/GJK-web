@@ -1,15 +1,17 @@
 use rand::{Rng, SeedableRng};
 use sha::utils::Digest;
 
-type Token = [u8; 48];
+pub type Token = [u8; 48];
 pub struct TokenStorage {
 	map: std::sync::Mutex<std::collections::HashMap<Token, String>>,
+	imap: std::sync::Mutex<std::collections::HashMap<String, std::vec::Vec<Token>>>,
 	rng: std::sync::Mutex<rand::rngs::StdRng>,
 }
 impl TokenStorage {
 	pub fn new() -> Self {
 		Self {
 			map: std::sync::Mutex::new(std::collections::HashMap::new()),
+			imap: std::sync::Mutex::new(std::collections::HashMap::new()),
 			rng: std::sync::Mutex::new(rand::rngs::StdRng::from_entropy()),
 		}
 	}
@@ -26,6 +28,7 @@ impl TokenStorage {
 	pub fn create(&self, mail: &str) -> Token {
 		let t = self.gen_token(mail);
 		self.map.lock().unwrap().insert(t, mail.to_owned());
+		self.imap.lock().unwrap().entry(mail.to_owned()).or_default().push(t);
 		t
 	}
 	pub fn get(&self, token: &Token) -> Option<String> {
@@ -37,16 +40,42 @@ impl TokenStorage {
 			Some(unsafe { o.unwrap_unchecked() }.clone())
 		}
 	}
-	pub fn remove(&self, token: &Token) {
-		let mut lg = self.map.lock().unwrap();
-		lg.remove(token);
+	pub fn iget(&self, mail: &str) -> Option<std::vec::Vec<Token>> {
+		let lg = self.imap.lock().unwrap();
+		let o = lg.get(mail);
+		if o.is_none() {
+			None
+		} else {
+			Some(unsafe { o.unwrap_unchecked() }.clone())
+		}
+	}
+	pub fn remove(&self, token: &Token) -> bool {
+		if let Some(mail) = self.map.lock().unwrap().remove(token) {
+			let mut imap = self.imap.lock().unwrap();
+			let i = imap[&mail].iter().position(|x| x == token).unwrap();
+			imap.get_mut(&mail).unwrap().remove(i);
+			true
+		} else { false }
+	}
+	pub fn remove_all(&self, mail: &str) -> bool {
+		if let Some(v) = self.imap.lock().unwrap().remove(mail) {
+			for t in v {
+				self.map.lock().unwrap().remove(&t);
+			}
+			true
+		} else { false }
 	}
 	pub fn filter(&self, max_age: u64) {
 		let tm = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
-		self.map.lock().unwrap().retain(|&token, _mail| {
-			let tmb = &token[8..16];
-			let timestamp = u64::from_le_bytes([tmb[0], tmb[1], tmb[2], tmb[3], tmb[4], tmb[5], tmb[6], tmb[7]]);
-			timestamp + max_age >= tm
+		self.map.lock().unwrap().retain(|token, _| {
+			token_timestamp(token) + max_age >= tm
+		});
+		let mut imap = self.imap.lock().unwrap();
+		imap.retain(|_, v| {
+			v.retain(|token| {
+				token_timestamp(token) + max_age >= tm
+			});
+			!v.is_empty()
 		});
 	}
 }
@@ -91,4 +120,8 @@ pub fn token_from_str(s: &str) -> Result<Token, &str> {
 		out[3 * i + 2] = group as u8;
 	}
 	Ok(out)
+}
+pub fn token_timestamp(t: &Token) -> u64 {
+	let tmb = &t[8..16];
+	u64::from_le_bytes([tmb[0], tmb[1], tmb[2], tmb[3], tmb[4], tmb[5], tmb[6], tmb[7]])
 }

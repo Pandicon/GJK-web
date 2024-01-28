@@ -86,7 +86,14 @@ async fn main() {
 								}
 							}
 						}
-						let tokenstr = auth::token_storage::token_to_str(&TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().create(&mail));
+						let ts = TOKEN_STORAGE.lock().unwrap();
+						if let Some(tokens) = ts.as_ref().unwrap().iget(&mail) {
+							if tokens.len() > 20 {
+								tracing::warn!("User {} has too many tokens ({}), removing (-> replacing) oldest token", mail, tokens.len());
+								ts.as_ref().unwrap().remove(tokens.iter().min_by_key(|t| auth::token_storage::token_timestamp(t)).unwrap());
+							}
+						}
+						let tokenstr = auth::token_storage::token_to_str(&ts.as_ref().unwrap().create(&mail));
 						([(axum::http::header::CONTENT_TYPE, "text/json")], "{".to_owned() + &format!("\"token\":\"{}\"", tokenstr) + "}").into_response()
 					}
 					Err(e) => {

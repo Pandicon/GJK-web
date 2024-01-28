@@ -6,17 +6,14 @@ use axum::{
 };
 
 pub async fn check_permissions(State(required_permissions): State<u32>, request: Request, next: Next) -> Result<Response, StatusCode> {
+	if required_permissions == 0 { // early exit to avoid potential unnecessary userdb/tokenstorage locks
+		return Ok(next.run(request).await);
+	}
 	let mut user_permissions = 0;
-	if let Some(auth_header) = request.headers().get("authorization") {
-		if let Ok(auth_header_str) = auth_header.to_str() {
-			if auth_header_str.starts_with("Bearer ") || auth_header_str.starts_with("bearer ") {
-				if let Ok(token) = crate::auth::token_storage::token_from_str(&auth_header_str[7..]) {
-					if let Some(mail) = crate::TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().get(&token) {
-						if let Ok(perms) = crate::USER_DB.lock().unwrap().as_ref().unwrap().get_perms(&mail) {
-							user_permissions = perms;
-						}
-					}
-				}
+	if let Some(token) = crate::auth::token_from_headers(&request) {
+		if let Some(mail) = crate::TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().get(&token) {
+			if let Ok(perms) = crate::USER_DB.lock().unwrap().as_ref().unwrap().get_perms(&mail) {
+				user_permissions = perms;
 			}
 		}
 	}
