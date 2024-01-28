@@ -1,6 +1,6 @@
 # POST /admin/delete_user
 
-required permissions: `ADMIN`
+required permissions: `MANAGE_USERS`
 
 Expects json body
 

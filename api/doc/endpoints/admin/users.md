@@ -1,6 +1,6 @@
 # GET /admin/users
 
-required permissions: `ADMIN`
+required permissions: `MANAGE_USERS`
 
 gets a list of users as json:
 
