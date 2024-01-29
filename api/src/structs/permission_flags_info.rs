@@ -1,4 +1,7 @@
-#[derive(Debug)]
+use axum::response::{IntoResponse, Response};
+use serde::Serialize;
+
+#[derive(Debug, Clone, Serialize)]
 pub struct PermissionFlagsInfo {
 	flag: String,
 	permissions: u32,
@@ -30,5 +33,12 @@ impl PermissionFlagsInfo {
 
 	pub fn get_permissions(&self) -> u32 {
 		self.permissions
+	}
+}
+
+impl IntoResponse for PermissionFlagsInfo {
+	fn into_response(self) -> Response {
+		let json = serde_json::to_string(&self).unwrap();
+		Response::new(json.into())
 	}
 }
