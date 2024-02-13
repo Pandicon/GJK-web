@@ -1,6 +1,7 @@
 use axum::{response::IntoResponse, routing};
 use lazy_static::lazy_static;
 
+mod article;
 mod auth;
 mod config;
 mod permissions_middleware;
@@ -11,6 +12,7 @@ mod suplovani;
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
 pub static USER_DB: std::sync::Mutex<std::option::Option<auth::userdb::UserDB>> = std::sync::Mutex::new(None);
 pub static TOKEN_STORAGE: std::sync::Mutex<std::option::Option<auth::token_storage::TokenStorage>> = std::sync::Mutex::new(None);
+pub static ARTICLE_DB: std::sync::Mutex<std::option::Option<article::db::ArticleDB>> = std::sync::Mutex::new(None);
 
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags_info.rs"));
@@ -29,7 +31,9 @@ async fn main() {
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
-	USER_DB.lock().unwrap().as_ref().unwrap().print().unwrap();
+	//USER_DB.lock().unwrap().as_ref().unwrap()._print().unwrap();
+
+	*ARTICLE_DB.lock().unwrap() = Some(article::db::ArticleDB::new());
 
 	let mut app = include!(concat!(std::env!("OUT_DIR"), "/router.rs"));
 

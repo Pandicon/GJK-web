@@ -71,7 +71,7 @@ impl UserDB {
 			tracing::error!("Failed to create user table: {}", e);
 		}
 	}
-	pub fn print(&self) -> Result<(), Box<dyn std::error::Error>> {
+	pub fn _print(&self) -> Result<(), Box<dyn std::error::Error>> {
 		self.con.iterate("SELECT * FROM user;", |data| {
 			tracing::info!(
 				"[{}] {}",
