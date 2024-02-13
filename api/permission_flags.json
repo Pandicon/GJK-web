@@ -19,6 +19,11 @@
 		"display_name": "Upravovat uživatele",
 		"description": "Umožňuje uživatelům upravovat jiné uživatele (měnit práva, přidávat či odebírat jim přístup, ...)"
 	},
+	"MANAGE_ARTICLES": {
+		"permissions": 8,
+		"display_name": "Upravovat články",
+		"description": "Umožňuje uživatelům přidávat, měnit a mazat články"
+	},
 
 	"GJK_DEFAULT": {
 		"permissions": 3,
