@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 
 mod article;
 mod auth;
+mod calendar;
 mod config;
 mod permissions_middleware;
 mod routes;
@@ -28,6 +29,7 @@ async fn main() {
 
 	let config = config::get_config();
 	let oauth_config = auth::config::get_oauth();
+	let calendar_config = calendar::fetcher::get_config();
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
