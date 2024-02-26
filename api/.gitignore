@@ -17,6 +17,7 @@ Cargo.lock
 .vscode/
 suplbackup/
 oauth.json
+skolni-web-calendar-credentials.json
 userdb.db
 link
 /client/
