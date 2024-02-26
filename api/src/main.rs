@@ -13,6 +13,7 @@ mod suplovani;
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
 pub static USER_DB: std::sync::Mutex<std::option::Option<auth::userdb::UserDB>> = std::sync::Mutex::new(None);
 pub static TOKEN_STORAGE: std::sync::Mutex<std::option::Option<auth::token_storage::TokenStorage>> = std::sync::Mutex::new(None);
+pub static CALENDAR_FETCHER: std::sync::Mutex<std::option::Option<calendar::fetcher::CalendarFetcher>> = std::sync::Mutex::new(None);
 pub static ARTICLE_DB: std::sync::Mutex<std::option::Option<article::db::ArticleDB>> = std::sync::Mutex::new(None);
 
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
@@ -29,10 +30,12 @@ async fn main() {
 
 	let config = config::get_config();
 	let oauth_config = auth::config::get_oauth();
-	let calendar_config = calendar::fetcher::get_config();
+	let calendar_fetcher = calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec);
+	println!("{:#?}", calendar_fetcher);
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
+	*CALENDAR_FETCHER.lock().unwrap() = Some(calendar_fetcher);
 	//USER_DB.lock().unwrap().as_ref().unwrap()._print().unwrap();
 
 	*ARTICLE_DB.lock().unwrap() = Some(article::db::ArticleDB::new());
