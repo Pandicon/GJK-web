@@ -108,7 +108,7 @@ fn main() {
 	std::fs::write(
 		std::path::Path::new(&out_dir).join("permission_flags_info.rs"),
 		format!(
-			"lazy_static! {{pub static ref PERMISSION_FLAGS_INFO: Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> = {{ let mut unsorted_vec = vec![{}]; unsorted_vec.sort_by(|a, b| a.get_flag().to_uppercase().cmp(&b.get_flag().to_uppercase())); unsorted_vec }};}}",
+			"lazy_static! {{pub static ref PERMISSION_FLAGS_INFO: Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> = {{ let mut unsorted_vec = vec![{}]; unsorted_vec.sort_by_key(|a| a.get_flag().to_uppercase()); unsorted_vec }};}}",
 			permissions_flags
 				.iter()
 				.map(|(flag, flag_info)| format!(
