@@ -29,8 +29,9 @@ async fn main() {
 	tracing_subscriber::fmt::init();
 
 	let config = config::get_config();
+	let google_credentials = config::get_google_credentials_config();
 	let oauth_config = auth::config::get_oauth();
-	let calendar_fetcher = calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec);
+	let calendar_fetcher = calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key);
 	println!("{:#?}", calendar_fetcher);
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
@@ -136,6 +137,12 @@ async fn main() {
 		"Permission flags info: {:#?}",
 		PERMISSION_FLAGS_INFO.iter().collect::<Vec<&crate::structs::permission_flags_info::PermissionFlagsInfo>>()
 	); // This is due to the PERMISSION_FLAGS_INFO variable being initialised via lazy_static!, so the type is a bit weird I suppose. But it should behave just as a normal Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> in other cases.
+
+	match CALENDAR_FETCHER.lock().unwrap().as_mut().unwrap().get_events(None, None).await {
+		Ok(Some(events)) => tracing::info!("Loaded calendar events: {:#?}", events),
+		Ok(None) => tracing::warn!("Google Calendar is disabled"),
+		Err(error) => tracing::error!("Error when loading calendar events: {:#?}", error),
+	}
 
 	axum::serve(listener, app).await.unwrap();
 }
