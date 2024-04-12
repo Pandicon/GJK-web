@@ -30,42 +30,85 @@ pub struct CalendarCredentials {
 }
 
 impl CalendarFetcher {
-	pub async fn get_events(&mut self, _start_date: Option<&str>, _end_date: Option<&str>) -> Result<Option<Vec<CalendarEvent>>, reqwest::Error> {
+	pub async fn get_events(&mut self, start_date: Option<i64>, end_date: Option<i64>) -> Result<Option<Vec<CalendarEvent>>, reqwest::Error> {
 		if !self.enabled {
 			tracing::warn!("Google Calendar is not enabled");
 			return Ok(None);
 		}
+		let start_time = start_date.unwrap_or(i64::MIN);
+		let end_time = end_date.unwrap_or(i64::MAX);
 		if self.cache.is_valid(self.cache_lifetime_sec) {
-			return Ok(Some(self.cache.events.clone()));
+			tracing::debug!("Using the calendar cache");
+			return Ok(Some(
+				self.cache
+					.events
+					.clone()
+					.into_iter()
+					.filter(|event| event.start.timestamp >= start_time && event.end.timestamp <= end_time)
+					.collect::<Vec<CalendarEvent>>(),
+			));
 		}
+		tracing::debug!("Fetching Google Calendar events");
 		let client = reqwest::Client::new();
 		let mut params = HashMap::new();
+		// TODO: Maybe only load events from the next year? Or even month? Right now it loads all events up to the end of 2043, including recurring events, which feels like a waste...
+		// Could use something like this:
 		/*if let Some(start_date) = start_date {
-			params.insert("timeMin", start_date);
+			if let Some(start_date) = crate::dates::unix_timestamp_to_rfc(start_date) {
+				params.insert("timeMin", start_date);
+			} else {
+				tracing::error!("Invalid Unix timestamp: {start_date}");
+			}
 		}
 		if let Some(end_date) = end_date {
-			params.insert("timeMax", end_date);
+			if let Some(end_date) = crate::dates::unix_timestamp_to_rfc(end_date) {
+				params.insert("timeMax", end_date);
+			} else {
+				tracing::error!("Invalid Unix timestamp: {end_date}");
+			}
 		}*/
-		// TODO: Maybe only load events from the next year? Or even month? Right now it loads all events up to the end of 2043, including recurring events, which feels like a waste...
-		params.insert("singleEvents", "true");
-		params.insert("orderBy", "startTime");
+		params.insert("singleEvents", String::from("true"));
+		params.insert("orderBy", String::from("startTime"));
 
 		let url = format!("https://www.googleapis.com/calendar/v3/calendars/{}/events?key={}", self.credentials.calendar_id, self.api_key);
 		let response = client.get(&url).query(&params).send().await?.text().await?;
 
 		let calendar_response_res = serde_json::from_str::<CalendarResponse>(&response);
 		match calendar_response_res {
-			Ok(calendar_response) => {
-				self.cache.events = calendar_response.events;
+			Ok(mut calendar_response) => {
+				self.cache.events = calendar_response
+					.events
+					.iter_mut()
+					.map(|event| {
+						if let Some(date) = &event.start.date {
+							event.start.timestamp = crate::dates::rfc_to_unix_timestamp(&format!("{date}T00:00:00Z")).unwrap_or(0);
+						}
+						if let Some(date_time) = &event.start.date_time {
+							event.start.timestamp = crate::dates::rfc_to_unix_timestamp(date_time).unwrap_or(0);
+						}
+						if let Some(date) = &event.end.date {
+							event.end.timestamp = crate::dates::rfc_to_unix_timestamp(&format!("{date}T00:00:00Z")).unwrap_or(0);
+						}
+						if let Some(date_time) = &event.end.date_time {
+							event.end.timestamp = crate::dates::rfc_to_unix_timestamp(date_time).unwrap_or(0);
+						}
+						event.clone()
+					})
+					.collect::<Vec<CalendarEvent>>();
+				self.cache.refreshed();
 			}
 			Err(err) => {
 				tracing::error!("Failed to deserialize the Google Calendar response: {:?}", err);
 			}
 		}
-		// TODO: Filter events by their start and end times
-		/*let start_time = start_date.unwrap_or(i64::MIN);
-		let end_time = end_date.unwrap_or(i64::MAX);*/
-		Ok(Some(self.cache.events.clone()))
+		Ok(Some(
+			self.cache
+				.events
+				.clone()
+				.into_iter()
+				.filter(|event| event.start.timestamp >= start_time && event.end.timestamp <= end_time)
+				.collect::<Vec<CalendarEvent>>(),
+		))
 	}
 }
 

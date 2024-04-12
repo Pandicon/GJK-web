@@ -12,6 +12,10 @@ impl CalendarCache {
 	}
 
 	pub fn is_valid(&self, cache_validity_s: i64) -> bool {
-		self.created_at + cache_validity_s > chrono::Utc::now().timestamp()
+		self.created_at + cache_validity_s > crate::dates::unix_timestamp()
+	}
+
+	pub fn refreshed(&mut self) {
+		self.created_at = crate::dates::unix_timestamp();
 	}
 }

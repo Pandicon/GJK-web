@@ -5,6 +5,7 @@ mod article;
 mod auth;
 mod calendar;
 mod config;
+mod dates;
 mod permissions_middleware;
 mod routes;
 mod structs;
@@ -31,12 +32,10 @@ async fn main() {
 	let config = config::get_config();
 	let google_credentials = config::get_google_credentials_config();
 	let oauth_config = auth::config::get_oauth();
-	let calendar_fetcher = calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key);
-	println!("{:#?}", calendar_fetcher);
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
-	*CALENDAR_FETCHER.lock().unwrap() = Some(calendar_fetcher);
+	*CALENDAR_FETCHER.lock().unwrap() = Some(calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key));
 	//USER_DB.lock().unwrap().as_ref().unwrap()._print().unwrap();
 
 	*ARTICLE_DB.lock().unwrap() = Some(article::db::ArticleDB::new());
