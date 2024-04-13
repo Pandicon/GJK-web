@@ -110,6 +110,10 @@ impl CalendarFetcher {
 				.collect::<Vec<CalendarEvent>>(),
 		))
 	}
+
+	pub fn cache_refreshed_at(&self) -> i64 {
+		self.cache.refreshed_at()
+	}
 }
 
 pub fn get_fetcher(cache_lifetime_sec_in: i64, api_key: String) -> CalendarFetcher {

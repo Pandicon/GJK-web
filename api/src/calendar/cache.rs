@@ -18,4 +18,8 @@ impl CalendarCache {
 	pub fn refreshed(&mut self) {
 		self.created_at = crate::dates::unix_timestamp();
 	}
+
+	pub fn refreshed_at(&self) -> i64 {
+		self.created_at
+	}
 }
