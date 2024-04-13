@@ -14,7 +14,8 @@ mod suplovani;
 static SUPL: std::sync::Mutex<std::option::Option<suplovani::Suplovani>> = std::sync::Mutex::new(None);
 pub static USER_DB: std::sync::Mutex<std::option::Option<auth::userdb::UserDB>> = std::sync::Mutex::new(None);
 pub static TOKEN_STORAGE: std::sync::Mutex<std::option::Option<auth::token_storage::TokenStorage>> = std::sync::Mutex::new(None);
-pub static CALENDAR_FETCHER: std::sync::Mutex<std::option::Option<calendar::fetcher::CalendarFetcher>> = std::sync::Mutex::new(None);
+pub static CALENDAR_FETCHER: once_cell::sync::Lazy<std::sync::Arc<tokio::sync::Mutex<std::option::Option<calendar::fetcher::CalendarFetcher>>>> =
+	once_cell::sync::Lazy::new(|| std::sync::Arc::new(tokio::sync::Mutex::new(None)));
 pub static ARTICLE_DB: std::sync::Mutex<std::option::Option<article::db::ArticleDB>> = std::sync::Mutex::new(None);
 
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
@@ -35,7 +36,7 @@ async fn main() {
 
 	*USER_DB.lock().unwrap() = Some(auth::userdb::UserDB::new());
 	*TOKEN_STORAGE.lock().unwrap() = Some(auth::token_storage::TokenStorage::new());
-	*CALENDAR_FETCHER.lock().unwrap() = Some(calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key));
+	*CALENDAR_FETCHER.lock().await = Some(calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key));
 	//USER_DB.lock().unwrap().as_ref().unwrap()._print().unwrap();
 
 	*ARTICLE_DB.lock().unwrap() = Some(article::db::ArticleDB::new());
@@ -137,11 +138,17 @@ async fn main() {
 		PERMISSION_FLAGS_INFO.iter().collect::<Vec<&crate::structs::permission_flags_info::PermissionFlagsInfo>>()
 	); // This is due to the PERMISSION_FLAGS_INFO variable being initialised via lazy_static!, so the type is a bit weird I suppose. But it should behave just as a normal Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> in other cases.
 
-	match CALENDAR_FETCHER.lock().unwrap().as_mut().unwrap().get_events(None, None).await {
-		Ok(Some(events)) => tracing::info!("Loaded calendar events: {:#?}", events),
-		Ok(None) => tracing::warn!("Google Calendar is disabled"),
-		Err(error) => tracing::error!("Error when loading calendar events: {:#?}", error),
-	}
+	let cf_clone = std::sync::Arc::clone(&CALENDAR_FETCHER);
+	tokio::spawn(async move {
+		let mut calendar_fetcher = cf_clone.lock().await;
+		match calendar_fetcher.as_mut().unwrap().get_events(None, None).await {
+			Ok(Some(events)) => tracing::info!("Loaded calendar events: {:#?}", events),
+			Ok(None) => tracing::warn!("Google Calendar is disabled"),
+			Err(error) => tracing::error!("Error when loading calendar events: {:#?}", error),
+		}
+	})
+	.await
+	.unwrap();
 
 	axum::serve(listener, app).await.unwrap();
 }
