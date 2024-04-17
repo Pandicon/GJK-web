@@ -24,9 +24,14 @@
 		"display_name": "Upravovat články",
 		"description": "Umožňuje uživatelům přidávat, měnit a mazat články"
 	},
+	"READ_CALENDAR": {
+		"permissions": 16,
+		"display_name": "Zobrazit kalendář",
+		"description": "Umožňuje uživatelům zobrazit kalendář"
+	},
 
 	"GJK_DEFAULT": {
-		"permissions": 3,
+		"permissions": 19,
 		"display_name": "Základní GJK uživatel",
 		"description": "Výchozí oprávnění pro uživatele s GJK emailem"
 	}

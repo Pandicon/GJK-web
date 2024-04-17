@@ -68,6 +68,7 @@ dependencies = [
  "dotenv",
  "http 1.0.0",
  "lazy_static",
+ "once_cell",
  "phf",
  "phf_codegen",
  "rand",
