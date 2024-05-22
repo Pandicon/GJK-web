@@ -12,7 +12,7 @@ pub async fn callback(axum::extract::Json(u_article): axum::extract::Json<Articl
 	article.create_timestamp = tm;
 	match adb.as_ref().unwrap().add(&article) {
 		Ok(_) => {
-			tracing::error!("Article {} by {} added", article.title, article.author);
+			tracing::info!("Article {} by {} added", article.title, article.author);
 			(
 				axum::http::StatusCode::CREATED,
 				[(axum::http::header::CONTENT_TYPE, "application/json")],
