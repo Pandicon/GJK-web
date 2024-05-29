@@ -6,7 +6,10 @@ fn serialize_history(out : &mut std::vec::Vec<u8>, hist : &StrSetHistory) {
 	for ((added, val), time) in hist.deltas.iter().zip(hist.timestamps.iter()) {
 		out.push(*added as u8);
 		out.extend(time.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs().to_le_bytes());
-		if val.len() > 255 {
+		if val.len() > 0x7fff {
+			tracing::warn!("Value too long ({} bytes) for correct serialization!", val.len());
+		}
+		if val.len() > 127 {
 			out.push((val.len() >> 8) as u8 | 128);
 		}
 		out.push(val.len() as u8);
@@ -22,7 +25,6 @@ fn deserialize_str<'a, I>(data : &mut I, len : usize) -> String where I : Iterat
 }
 fn deserialize_history<'a, I>(data : &mut I, hist : &mut StrSetHistory) where I : Iterator<Item=&'a u8> {
 	let len = *data.next().unwrap() as u16 | (*data.next().unwrap() as u16) << 8;
-	//println!("ds hist, len={}", len);
 	for _ in 0..len {
 		let added = *data.next().unwrap() != 0;
 		let timestamp = (*data.next().unwrap() as u64) |
@@ -38,7 +40,6 @@ fn deserialize_history<'a, I>(data : &mut I, hist : &mut StrSetHistory) where I 
 			val_len = (val_len & !128) << 8 | (*data.next().unwrap() as u16);
 		}
 		let val = deserialize_str(data, val_len as usize);
-		//println!("parsed {} {} {}", added, timestamp, val);
 		let tm = std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(timestamp);
 		hist.deltas.push((added, val.clone()));
 		hist.timestamps.push(tm);

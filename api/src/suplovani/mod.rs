@@ -23,7 +23,7 @@ impl Suplovani {
 	pub fn load(&mut self) {
 		for f in std::fs::read_dir("./suplbackup/").unwrap() {
 			let name = f.unwrap().file_name().into_string().unwrap();
-			println!("loading supl backup {}", name);
+			tracing::info!("loading supl backup {}", name);
 			let data  = std::fs::read(format!("./suplbackup/{}", name)).unwrap();
 			let mut di = data.iter();
 			let dayid = name[4..].parse::<u64>().unwrap();
@@ -38,7 +38,7 @@ impl Suplovani {
 		self.update_thr = Some(std::thread::spawn(move || {
 			let mut sm = smm.unwrap();
 			loop {
-				println!("suplovani refresh...");
+				tracing::info!("suplovani refresh...");
 				supl_driver::fetch_data(&mut sm);
 				archive::save_and_filter_data(&mut sm);
 				let mut ad = String::from("{\"curr_day\":");
