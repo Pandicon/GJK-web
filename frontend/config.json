@@ -1,0 +1,11 @@
+{
+	"pages_from_google_docs": {
+		"interval": 30000,
+		"pages": [
+			{
+				"document_id": "1aaTQcSKJdNrgfrHirq1XWo2zhTcWhZybWaen5LbTBNI",
+				"file_name": "test"
+			}
+		]
+	}
+}
