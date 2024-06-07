@@ -3,7 +3,7 @@ use crate::article::Article;
 
 pub const _ROUTE: &str = "/article/articles";
 pub const _PERMISSIONS: &str = "NONE";
-pub const _TYPE: &str = "GET";
+pub const _TYPE: &str = "POST";
 
 #[derive(serde::Deserialize)]
 pub struct Page {
