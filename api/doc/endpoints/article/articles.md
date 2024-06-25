@@ -1,15 +1,11 @@
 # GET /article/articles
 
-\[!\] this endpoint might change
-
 required permissions: `NONE`
 
-Expects json body
+Expects url parameter like this:
 
-```json
-{
-	"page":4
-}
+```
+/article/articles?page=4
 ```
 
 gets a list of `page`-th set of 10 (hardcoded page size) articles as json:
