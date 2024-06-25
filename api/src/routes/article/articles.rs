@@ -14,7 +14,7 @@ struct ArticleList {
 	pub articles : Vec<Article>
 }
 
-pub async fn callback(axum::extract::Json(page): axum::extract::Json<Page>) -> axum::response::Response<axum::body::Body> {
+pub async fn callback(axum::extract::Query(page): axum::extract::Query<Page>) -> axum::response::Response<axum::body::Body> {
 	let adb = crate::ARTICLE_DB.lock().unwrap();
 	match adb.as_ref().unwrap().get_chronol(page.page as usize, 10) {
 		Ok(al) => {
