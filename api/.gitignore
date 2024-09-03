@@ -20,5 +20,8 @@ oauth.json
 google_credentials.json
 skolni-web-calendar-credentials.json
 userdb.db
+blobs.db
+img.png
+stare_clanky.json
 link
 /client/
