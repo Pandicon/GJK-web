@@ -1,4 +1,5 @@
 pub mod db;
+pub mod imagedb;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Article {
@@ -11,3 +12,4 @@ pub struct Article {
 	#[serde(skip_deserializing)]
 	pub create_timestamp: u64,
 }
+
