@@ -30,7 +30,7 @@ impl ArticleDB {
 		Ok(base_out)
 	}
 	pub fn get_chronol(&self, page : usize, pagesize : usize) -> Result<Vec<Article>, Box<dyn std::error::Error>> {
-		let mut s = self.con.prepare("SELECT id, timestamp FROM article_meta ORDER BY timestamp ASC LIMIT ?1 OFFSET ?2;")?;
+		let mut s = self.con.prepare("SELECT id, timestamp FROM article_meta ORDER BY timestamp DESC LIMIT ?1 OFFSET ?2;")?;
 		let al = s.query_map([pagesize, page * pagesize], |r| Ok(Article{id: r.get(0)?, create_timestamp: r.get(1)?,
 			tags: vec![], title: String::new(), author: String::new(), content: String::new()}))?;
 		let mut out = Vec::new();
