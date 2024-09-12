@@ -15,6 +15,7 @@ gets a list of `page`-th set of 10 (hardcoded page size) articles as json:
 	"articles":[
 		{
 			"id":42,
+			"thumbnail_id":42,
 			"timestamp":1716403351,
 			"title":"Název úžasného článku",
 			"author":"Anonym :D",

@@ -5,6 +5,7 @@ pub struct Config {
 	pub ip: String,
 	pub port: String,
 	pub supl_fetch_enabled: bool,
+	pub debug_tokens_enabled: Option<bool>,
 	pub calendar_cache_lifetime_sec: i64,
 }
 

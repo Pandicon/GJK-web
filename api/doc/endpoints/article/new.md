@@ -12,8 +12,11 @@ Expects json body
 	"author":"<string author>",
 	"content":"<string content>",
 	"tags":["<string tag>", "<string tag 2> ..."],
+	"thumbnail_id":42,
 }
 ```
+
+(you can use `thumbnail_id` 0 for articles without a thumbnail and shift the rest by one to fit the blobs)
 
 adds an article and responds with json
 

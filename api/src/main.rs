@@ -47,6 +47,12 @@ async fn main() {
 		*CALENDAR_FETCHER.lock().await = Some(calendar::fetcher::get_fetcher(config.calendar_cache_lifetime_sec, google_credentials.api_key));
 	}
 	//USER_DB.lock().unwrap().as_ref().unwrap()._print().unwrap();
+	if config.debug_tokens_enabled.unwrap_or(false) {
+		for u in USER_DB.lock().unwrap().as_ref().unwrap().get().unwrap() {
+			let token = TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().create(&u.0);
+			tracing::info!("debug token {} (perms {}): {}", u.0, u.1, auth::token_storage::token_to_str(&token));
+		};
+	}
 
 	*ARTICLE_DB.lock().unwrap() = Some(article::db::ArticleDB::new());
 	*IMAGE_DB.lock().unwrap() = Some(article::imagedb::ImageDB::new());
