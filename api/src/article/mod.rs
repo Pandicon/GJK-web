@@ -11,5 +11,6 @@ pub struct Article {
 	pub tags: Vec<String>,
 	#[serde(skip_deserializing)]
 	pub create_timestamp: u64,
+	pub thumbnail_id: u64,
 }
 
