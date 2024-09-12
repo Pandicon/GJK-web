@@ -1,5 +1,7 @@
 use axum::{response::IntoResponse, routing};
+use base64::Engine;
 use lazy_static::lazy_static;
+use rand::RngCore;
 
 mod article;
 mod auth;
@@ -22,6 +24,10 @@ pub static IMAGE_DB: std::sync::Mutex<std::option::Option<article::imagedb::Imag
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags.rs"));
 include!(concat!(std::env!("OUT_DIR"), "/permission_flags_info.rs"));
 include!(concat!(std::env!("OUT_DIR"), "/routes.rs"));
+
+thread_local! {
+	pub static RNG: std::cell::RefCell<rand::rngs::ThreadRng> = std::cell::RefCell::new(rand::thread_rng());
+}
 
 #[tokio::main]
 async fn main() {
@@ -66,9 +72,36 @@ async fn main() {
 	}
 	let mut _token_filter_thread = None; // for scoping, maybe this should be done through lifetimes?
 	if oauth_config.enabled {
-		app = app.route(
-			"/auth/oauth",
+		let state_set = std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashSet::<String>::new()));
+		let state_set_c = std::sync::Arc::clone(&state_set);
+		let oauth_config_cpy = auth::config::OAuthConfig{enabled: true, client_id: oauth_config.client_id.clone(), client_secret: String::new(), redirect_uri: oauth_config.redirect_uri.clone()};
+		app = app.route("/auth/redirect",
+			routing::get(|| async move {
+				let mut nonce = [0u8; 48];
+				RNG.with_borrow_mut(|r| r.fill_bytes(&mut nonce));
+				let nonce = base64::engine::general_purpose::URL_SAFE.encode(nonce);
+				let mut state = [0u8; 48];
+				RNG.with_borrow_mut(|r| r.fill_bytes(&mut state));
+				let state = base64::engine::general_purpose::URL_SAFE.encode(state);
+				{
+					let mut state_set_cr = state_set_c.lock();
+					if state_set_cr.as_mut().unwrap().len() > 100000 {
+						// it might fail after 100k of failed logins which probably won't ever
+						// happen unless someone is trying to overload the server (this ensures
+						// that the state set doesn't grow too big to cause `out of memory` problems)
+						state_set_cr.as_mut().unwrap().clear();
+					}
+					state_set_cr.as_mut().unwrap().insert(state.clone());
+				}
+				(axum::http::StatusCode::FOUND, [(axum::http::header::LOCATION,
+					format!("https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={}&scope=profile%20email&redirect_uri={}&state={}&login_hint=xabcdef01@gjk.cz&nonce={}",
+						oauth_config_cpy.client_id, oauth_config_cpy.redirect_uri, state, nonce))]).into_response()
+			})
+		).route("/auth/oauth",
 			routing::get(|code: axum::extract::Query<auth::oauth::OAuthCode>| async move {
+				if !state_set.lock().as_mut().unwrap().remove(&code.state) {
+					return (axum::http::StatusCode::FORBIDDEN, "Invalid state.").into_response();
+				}
 				match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
 					Ok(mail) => {
 						if mail.ends_with("@gjk.cz") {
@@ -137,10 +170,10 @@ async fn main() {
 	tracing::info!("Listening on {}", ip_and_port);
 	tracing::info!("Generated routes: {}", GENERATED_ROUTES);
 	tracing::info!("Permission flags: {:#?}", PERMISSION_FLAGS);
-	tracing::info!(
+	/*tracing::info!(
 		"Permission flags info: {:#?}",
 		PERMISSION_FLAGS_INFO.iter().collect::<Vec<&crate::structs::permission_flags_info::PermissionFlagsInfo>>()
-	); // This is due to the PERMISSION_FLAGS_INFO variable being initialised via lazy_static!, so the type is a bit weird I suppose. But it should behave just as a normal Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> in other cases.
+	); // This is due to the PERMISSION_FLAGS_INFO variable being initialised via lazy_static!, so the type is a bit weird I suppose. But it should behave just as a normal Vec<crate::structs::permission_flags_info::PermissionFlagsInfo> in other cases.*/
 
 	if google_credentials.enabled {
 		let cf_clone = std::sync::Arc::clone(&CALENDAR_FETCHER);
