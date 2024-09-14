@@ -1,0 +1,23 @@
+.footer {
+	padding-block: 2rem;
+}
+
+.footerContent {
+	display: flex;
+	justify-content: space-between;
+}
+
+.footerLinks {
+	display: flex;
+	gap: 4rem;
+}
+
+.footerContent li {
+	list-style-type: none;
+}
+
+.title {
+	display: block;
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+}

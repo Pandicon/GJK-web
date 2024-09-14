@@ -1,95 +1,101 @@
 import Image from "next/image";
+import { partnerLogos } from "@/public/logos/";
+import headerImage from "@/public/images/header.jpeg";
 import styles from "./page.module.css";
+import Button from "@/components/Button";
+import { getAspectRatio } from "@/lib/utils";
 
-export default function Home() {
+export default async function Home() {
+  const articles = await getArticles(0);
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
+    <>
+      <section
+        className={`${styles.twoColumn} ${styles.hero} content-max-width`}
+      >
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
+          <h1>
+            Podporujeme rozvoj <span className={styles.highlight}>každého</span>{" "}
+            studenta
+          </h1>
           <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
+            Naše výuka podporuje kreativitu, kritické myšlení a zodpovědnost v
+            přátelském a podporujícím prostředí. Je to místem, kde se setkávají
+            nadaní studenti, kteří společně objevují a rozvíjejí svůj potenciál,
+            dosahují vynikajících výsledků a osobního růstu.
           </p>
-        </a>
-      </div>
-    </main>
+          <Button href="#about">ZJISTIT VÍCE</Button>
+          <Button href="/" outline>
+            PŘIJMACÍ ŘÍZENÍ
+          </Button>
+        </div>
+        <Image src={headerImage} alt="" />
+      </section>
+      <section
+        className={`bg-blue ${styles.articles} ${styles.sectionPadding}`}
+      >
+        <div className="content-max-width">
+          <h2>Aktuality</h2>
+          <div className={styles.articleWrapper}>
+            {articles.slice(0, 3).map((a) => (
+              <article key={a.id}>
+                <h3>{a.title}</h3>
+                <p>{a.content}</p>
+              </article>
+            ))}
+          </div>
+          <Button href="/" outline>
+            VŠECHNY AKTUALITY
+          </Button>
+        </div>
+      </section>
+      <section
+        id="about"
+        className={`${styles.twoColumn} ${styles.sectionPadding} content-max-width`}
+      >
+        <Image src={headerImage} alt="" />
+        <div>
+          <h2>O škole</h2>
+          <p>
+            Gymnázium Jana Keplera je moderní střední škola zaměřená na rozvoj
+            talentů a silných stránek každého studenta. Naše výuka podporuje
+            kreativitu, kritické myšlení a zodpovědnost v přátelském a
+            podporujícím prostředí. Studenti zde mohou rozvíjet své schopnosti a
+            aktivně se zapojovat do života školy i širší komunity. Je to místem,
+            kde se setkávají nadaní studenti, kteří objevují a rozvíjejí svůj
+            potenciál, dosahují vynikajících výsledků a osobního růstu.
+          </p>
+          <Button href="https://sites.google.com/a/gjk.cz/svp/home" outline>
+            ŠVP
+          </Button>
+        </div>
+      </section>
+      <section className={`${styles.partners}`}>
+        <div className={`content-max-width ${styles.partnerLogos}`}>
+          {partnerLogos.map((logo, index) => (
+            <Image
+              src={logo}
+              alt=""
+              key={index}
+              style={{ flex: getAspectRatio(logo) }}
+            />
+          ))}
+        </div>
+      </section>
+    </>
   );
+}
+
+async function getArticles(page: number): Promise<Array<Article>> {
+  const address = "http://127.0.0.1:2357";
+  const path = `article/articles?page=${page}`;
+  const res = await fetch(`${address}/${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch articles");
+  }
+  const json = await res.json();
+  return json?.articles as Array<Article>;
 }
