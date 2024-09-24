@@ -12,7 +12,9 @@ const Footer = () => {
             <ul>
               <li>Parléřova 2, 169 00, Praha 6</li>
               <li>+420 233 352 546</li>
-              <li>gjk@gjk.cz</li>
+              <li>
+                <a href="mailto:gjk@gjk.cz">gjk@gjk.cz</a>
+              </li>
             </ul>
           </div>
           <div>

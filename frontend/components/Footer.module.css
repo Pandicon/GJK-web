@@ -12,6 +12,11 @@
 	gap: 4rem;
 }
 
+.footerLinks a {
+	color: inherit;
+	text-decoration: none;
+}
+
 .footerContent li {
 	list-style-type: none;
 }
