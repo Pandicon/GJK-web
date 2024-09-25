@@ -24,7 +24,7 @@ for post_i,post in enumerate(data[:10]):
 		print(e)
 		sys.exit(1)
 	timestamp = post['unix'] if post['unix'] > len(data) else post_i
-	cmd = f"INSERT INTO article_meta VALUES ({c.lastrowid}, {timestamp});"
+	cmd = f"INSERT INTO article_meta VALUES ({c.lastrowid}, {timestamp}, 0);"
 	try:
 		c.execute(cmd)
 	except Exception as e:
