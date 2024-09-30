@@ -13,7 +13,7 @@ c = con.cursor()
 if "--clear" in sys.argv:
 	c.execute("DELETE FROM article")
 	c.execute("DELETE FROM article_meta")
-for post_i,post in enumerate(data[:10]):
+for post_i,post in enumerate(data):
 	content = "<br>".join(s.replace("'", "''") for s in post['contents'])
 	tags = ';'.join([post['categories']])
 	cmd = f"INSERT INTO article VALUES ('{post['title']}', '{post['author']}', '{content}', '{tags}')"
