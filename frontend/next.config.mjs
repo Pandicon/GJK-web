@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/login",
-        destination: "http://localhost:2357/auth/redirect",
+        destination: `${process.env.API_HOST}/auth/redirect`,
         permanent: true,
       },
     ];

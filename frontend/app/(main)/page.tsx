@@ -86,13 +86,15 @@ export default async function Home() {
 }
 
 async function getArticles(page: number): Promise<Array<Article>> {
-  const address = "http://127.0.0.1:2357";
-  const path = `article/articles?page=${page}`;
-  const res = await fetch(`${address}/${path}`, {
-    headers: {
-      "Content-Type": "application/json",
+  const res = await fetch(
+    `${process.env.API_HOST}/article/articles?page=${page}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
-  });
+  );
+
   if (!res.ok) {
     throw new Error("Failed to fetch articles");
   }

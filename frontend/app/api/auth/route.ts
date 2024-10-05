@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
   const res = await fetch(
-    `http://localhost:2357/auth/oauth?${params.toString()}`,
+    `${process.env.API_HOST}/auth/oauth?${params.toString()}`,
   );
 
   if (!res.ok) {
