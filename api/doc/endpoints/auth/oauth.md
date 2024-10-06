@@ -4,11 +4,12 @@ required permissions: None
 
 Logs in user and generates a token, expects `?code=[code]&status=[status]` arguments.
 
-Finishes OAuth2 by requesting access token from Google API and gets users, e-mail address. If user with that address exists, then token is generated and sent back to the user. If the address ends with `@gjk.cz`, then a new user with `GJK_DEFAULT` perms is created for the email and token is generated as well. Token is send in json:
+Finishes OAuth2 by requesting access token from Google API and gets users, e-mail address. If user with that address exists, then token is generated and sent back to the user. If the address ends with `@gjk.cz`, then a new user with `GJK_DEFAULT` perms is created for the email and token is generated as well. Token is send in json along with user permissions:
 
 ```json
 {
-	"token":"<token>"
+	"token":"<token>",
+	"perms":19
 }
 ```
 

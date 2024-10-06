@@ -110,6 +110,7 @@ async fn main() {
 				}
 				match auth::oauth::get_email_from_code(&code.code, &oauth_config).await {
 					Ok(mail) => {
+						let user_perms;
 						if mail.ends_with("@gjk.cz") {
 							let perms = USER_DB
 								.lock()
@@ -120,6 +121,7 @@ async fn main() {
 							match perms {
 								Ok(p) => {
 									tracing::info!("gjk user {} logged in with perms {}", mail, p);
+									user_perms = p;
 								}
 								Err(e) => {
 									tracing::error!("gjk user {} logged in, but the server couldn't get perms: {}", mail, e);
@@ -130,7 +132,10 @@ async fn main() {
 							let perms = USER_DB.lock().unwrap().as_ref().unwrap().get_perms_opt(&mail);
 							match perms {
 								Ok(po) => match po {
-									Some(p) => tracing::info!("non-gjk user {} logged in with perms {}", mail, p),
+									Some(p) => {
+										tracing::info!("non-gjk user {} logged in with perms {}", mail, p);
+										user_perms = p;
+									}
 									None => {
 										tracing::info!("non-gjk user {} can't log in without pre-existing user", mail);
 										return (axum::http::StatusCode::FORBIDDEN, format!("e-mail {} isn't registered", mail)).into_response();
@@ -150,7 +155,7 @@ async fn main() {
 							}
 						}
 						let tokenstr = auth::token_storage::token_to_str(&ts.as_ref().unwrap().create(&mail));
-						([(axum::http::header::CONTENT_TYPE, "application/json")], "{".to_owned() + &format!("\"token\":\"{}\"", tokenstr) + "}").into_response()
+						([(axum::http::header::CONTENT_TYPE, "application/json")], format!("{{\"token\":\"{}\",\"perms\":{}}}", tokenstr, user_perms)).into_response()
 					}
 					Err(e) => {
 						tracing::error!("Error after OAuth callback - {:?}! (state = {})", e, code.state);
