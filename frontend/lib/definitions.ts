@@ -1,4 +1,4 @@
-type Article = {
+export type Article = {
   id: number;
   create_timestamp: number;
   title: string;
