@@ -1,8 +1,9 @@
 type Article = {
   id: number;
-  timestamp: number;
+  create_timestamp: number;
   title: string;
   author: string;
   content: string;
   tags: Array<string>;
+  thumbnail_id: number;
 };
