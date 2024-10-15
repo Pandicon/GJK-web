@@ -4,6 +4,7 @@ import headerImage from "@/public/images/header.jpeg";
 import styles from "./page.module.css";
 import Button from "@/components/Button";
 import { getAspectRatio } from "@/lib/utils";
+import { getArticles } from "@/lib/actions";
 
 export default async function Home() {
   const articles = await getArticles(0);
@@ -83,21 +84,4 @@ export default async function Home() {
       </section>
     </>
   );
-}
-
-async function getArticles(page: number): Promise<Array<Article>> {
-  const res = await fetch(
-    `${process.env.API_HOST}/article/articles?page=${page}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch articles");
-  }
-  const json = await res.json();
-  return json?.articles as Array<Article>;
 }

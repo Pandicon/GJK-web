@@ -1,6 +1,7 @@
 import "server-only";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
@@ -41,7 +42,23 @@ export async function createSession(token: string, perms: number) {
 export async function getSession() {
   const jwt = cookies().get("session")?.value;
   if (!jwt) return undefined;
-  return await decrypt(jwt);
+  const session = await decrypt(jwt);
+  return session;
+}
+
+export async function isValidSession(session: SessionData) {
+  const res = await fetch(`${process.env.API_HOST}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${session?.token}`,
+    },
+  });
+
+  console.log(res.status);
+
+  if (res.status == 400) {
+    return false;
+  }
+  return true;
 }
 
 export function deleteSession() {

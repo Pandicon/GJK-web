@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
+import { getSession, isValidSession } from "@/lib/session";
 
 const protectedRoutes = ["/dashboard"];
 const publicRoutes = ["/login"];
@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
 
   const session = await getSession();
 
-  if (isProtectedRoute && !session) {
+  if (isProtectedRoute && (!session || !(await isValidSession(session)))) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
   if (
