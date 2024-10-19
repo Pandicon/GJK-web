@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,9 +14,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Textarea } from "../ui/textarea";
 import { postArticle } from "@/lib/actions";
 import { toast } from "@/hooks/use-toast";
+import TextEditor from "@/components/dashboard/text-editor";
 
 const formSchema = z.object({
   title: z.string().max(80),
@@ -52,7 +51,7 @@ const ArticleEditor = () => {
             <FormItem>
               <FormLabel>Obsah</FormLabel>
               <FormControl>
-                <Textarea {...field} />
+                <TextEditor {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
