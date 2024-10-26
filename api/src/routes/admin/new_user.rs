@@ -1,14 +1,9 @@
 use axum::response::IntoResponse;
+use crate::auth::userdb::User;
 
 pub const _ROUTE: &str = "/admin/new_user";
 pub const _PERMISSIONS: &str = "MANAGE_USERS";
 pub const _TYPE: &str = "POST";
-
-#[derive(serde::Deserialize)]
-pub struct User {
-	pub mail: String,
-	pub perms: u32,
-}
 
 pub async fn callback(axum::extract::Json(user): axum::extract::Json<User>) -> axum::response::Response<axum::body::Body> {
 	let udb = crate::USER_DB.lock().unwrap();
@@ -33,7 +28,7 @@ pub async fn callback(axum::extract::Json(user): axum::extract::Json<User>) -> a
 				.into_response();
 		}
 	}
-	match udb.as_ref().unwrap().add_user(&user.mail, user.perms) {
+	match udb.as_ref().unwrap().add_user(&user.mail, user.name.as_deref(), user.perms) {
 		Ok(_) => (
 			axum::http::StatusCode::CREATED,
 			[(axum::http::header::CONTENT_TYPE, "application/json")],
