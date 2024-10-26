@@ -19,7 +19,7 @@ impl ArticleDB {
 		let mut s = self.con.prepare("SELECT * FROM article WHERE rowid = ?1")?;
 		Ok(s.query_row([id], |r| {
 			let tags_str : String = r.get(3)?;
-			Ok(Article{id, title: r.get(0)?, author: r.get(1)?, content: r.get(2)?,
+			Ok(Article{id, title: r.get(0)?, author_email: r.get(1)?, content: r.get(2)?,
 				tags: tags_str.split(';').map(|x| x.to_owned()).collect::<Vec<String>>(),
 				create_timestamp: 0, thumbnail_id: 0 })
 		})?)
@@ -36,7 +36,7 @@ impl ArticleDB {
 		let mut s = self.con.prepare("SELECT id, timestamp, thumbnail FROM article_meta ORDER BY timestamp DESC LIMIT ?1 OFFSET ?2;")?;
 		let al = s.query_map([pagesize, page * pagesize], |r| Ok(Article{
 			id: r.get(0)?, create_timestamp: r.get(1)?, thumbnail_id: r.get(2)?,
-			tags: vec![], title: String::new(), author: String::new(), content: String::new()}))?;
+			tags: vec![], title: String::new(), author_email: String::new(), content: String::new()}))?;
 		let mut out = Vec::new();
 		for a in al {
 			out.push(a?);
@@ -47,7 +47,7 @@ impl ArticleDB {
 				let tags_str : String = r.get(3)?;
 				a.tags = tags_str.split(';').map(|x| x.to_owned()).collect::<Vec<String>>();
 				a.title = r.get(0)?;
-				a.author = r.get(1)?;
+				a.author_email = r.get(1)?;
 				a.content = r.get(2)?;
 				Ok(())
 			})?;
@@ -57,7 +57,7 @@ impl ArticleDB {
 	/// article id is ignored, actual is returned
 	pub fn add(&self, a : &Article) -> Result<i64, Box<dyn std::error::Error>> {
 		self.con.execute("BEGIN TRANSACTION", [])?;
-		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4)", rusqlite::params![a.title, a. author, a.content, a.tags.join(";")])?;
+		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4)", rusqlite::params![a.title, a. author_email, a.content, a.tags.join(";")])?;
 		let id = self.con.last_insert_rowid();
 		self.con.execute("INSERT INTO article_meta VALUES (?1, ?2, ?3);", rusqlite::params![id, a.create_timestamp, a.thumbnail_id])?;
 		self.con.execute("END TRANSACTION", [])?;
