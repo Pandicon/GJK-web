@@ -84,7 +84,7 @@ fn main() {
 				.replace('\\', "/")
 				.replace('/', "::");
 			*output += format!(
-				".route(\"{route}\", axum::routing::{req_type}({modules_prefix}::{}::callback).layer(axum::middleware::from_fn_with_state({permissions}, permissions_middleware::check_permissions)))",
+				".route(\"{route}\", axum::routing::{req_type}({modules_prefix}::{}::callback).layer(axum::middleware::from_fn(user_data_middleware::attach_user_data)).layer(axum::middleware::from_fn_with_state({permissions}, permissions_middleware::check_permissions)))",
 				path.file_stem().unwrap().to_str().unwrap()
 			)
 			.as_str();

@@ -9,6 +9,7 @@ mod calendar;
 mod config;
 mod dates;
 mod permissions_middleware;
+mod user_data_middleware;
 mod routes;
 mod structs;
 mod suplovani;

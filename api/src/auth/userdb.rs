@@ -3,7 +3,8 @@ pub struct UserDB {
 	con: rusqlite::Connection,
 }
 
-struct User {
+#[derive(Clone)]
+pub struct User {
 	pub mail : String,
 	pub perms : u32
 }
@@ -41,6 +42,25 @@ impl UserDB {
 	pub fn get_perms_opt(&self, mail: &str) -> Result<Option<u32>, Box<dyn std::error::Error>> {
 		let mut s = self.con.prepare("SELECT perms FROM user WHERE mail = ?1;")?;
 		if let Ok(perms) = s.query_row([mail], |r| { let x : u32 = r.get(0)?; Ok(x) } ) {
+			return Ok(Some(perms));
+		}
+		Ok(None)
+	}
+	pub fn get_user(&self, mail: &str) -> Result<User, Box<dyn std::error::Error>> {
+		match self.get_user_opt(mail) {
+			Ok(Some(user)) => Ok(user),
+			Ok(None) => Err(format!("User with mail {} doesn't exist.", mail).into()),
+			Err(e) => Err(e)
+		}
+	}
+	pub fn get_user_opt(&self, mail: &str) -> Result<Option<User>, Box<dyn std::error::Error>> {
+		let mut s = self.con.prepare("SELECT mail, perms FROM user WHERE mail = ?1;")?;
+		if let Ok(perms) = s.query_row([mail], |r| {
+			Ok(User {
+				mail: r.get(0)?,
+				perms: r.get(1)?
+			})
+		} ) {
 			return Ok(Some(perms));
 		}
 		Ok(None)
