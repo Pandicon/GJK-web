@@ -57,7 +57,7 @@ impl ArticleDB {
 	/// article id is ignored, actual is returned
 	pub fn add(&self, a : &Article) -> Result<i64, Box<dyn std::error::Error>> {
 		self.con.execute("BEGIN TRANSACTION", [])?;
-		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4)", rusqlite::params![a.title, a. author_email, a.content, a.tags.join(";")])?;
+		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4)", rusqlite::params![a.title, a.author_email, a.content, a.tags.join(";")])?;
 		let id = self.con.last_insert_rowid();
 		self.con.execute("INSERT INTO article_meta VALUES (?1, ?2, ?3);", rusqlite::params![id, a.create_timestamp, a.thumbnail_id])?;
 		self.con.execute("END TRANSACTION", [])?;
