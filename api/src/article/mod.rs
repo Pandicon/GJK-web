@@ -16,10 +16,9 @@ pub struct Article {
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
-pub struct ArticleWithAuthorName {
+pub struct ArticleWithAuthorNameWithoutAuthorEmail {
 	pub id: i64,
 	pub title: String,
-	pub author_email: String,
 	pub author_name: Option<String>,
 	pub content: String,
 	pub tags: Vec<String>,
@@ -27,12 +26,11 @@ pub struct ArticleWithAuthorName {
 	pub thumbnail_id: u64,
 }
 
-impl ArticleWithAuthorName {
+impl ArticleWithAuthorNameWithoutAuthorEmail {
 	pub fn from_article(article: Article, author_name: Option<String>) -> Self {
 		Self {
 			id: article.id,
 			title: article.title,
-			author_email: article.author_email,
 			author_name,
 			content: article.content,
 			tags: article.tags,

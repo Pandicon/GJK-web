@@ -1,5 +1,5 @@
 use axum::response::IntoResponse;
-use crate::article::ArticleWithAuthorName;
+use crate::article::ArticleWithAuthorNameWithoutAuthorEmail;
 use crate::USER_DB;
 
 pub const _ROUTE: &str = "/article/articles";
@@ -12,7 +12,7 @@ pub struct Page {
 }
 #[derive(serde::Serialize)]
 struct ArticleList {
-	pub articles : Vec<ArticleWithAuthorName>
+	pub articles : Vec<ArticleWithAuthorNameWithoutAuthorEmail>
 }
 
 pub async fn callback(axum::extract::Query(page): axum::extract::Query<Page>) -> axum::response::Response<axum::body::Body> {
@@ -27,7 +27,7 @@ pub async fn callback(axum::extract::Query(page): axum::extract::Query<Page>) ->
 						None
 					}
 				};
-				ArticleWithAuthorName::from_article(article, author_name)
+				ArticleWithAuthorNameWithoutAuthorEmail::from_article(article, author_name)
 			}).collect();
 			(
 				axum::http::StatusCode::OK,
