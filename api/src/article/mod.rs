@@ -6,7 +6,8 @@ pub struct Article {
 	#[serde(skip_deserializing)]
 	pub id: i64,
 	pub title: String,
-	pub author: String,
+	#[serde(skip_deserializing)]
+	pub author_email: String,
 	pub content: String,
 	pub tags: Vec<String>,
 	#[serde(skip_deserializing)]
