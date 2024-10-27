@@ -6,13 +6,14 @@ gets a list of users as json:
 
 ```json
 {
-	"users":[
-		{
-			"mail":"mail0@gjk.cz",
-			"perms":3
-		},
+    "users":[
+        {
+            "mail":"mail0@gjk.cz",
+            "name":"uzivatel",
+            "perms":3
+        },
 		// ...
-	]
+    ]
 }
 ```
 
@@ -24,6 +25,6 @@ If the user database requests fail, the server replies with status code `500 Int
 
 ```json
 {
-	"message":"<message>",
+    "message":"<message>",
 }
 ```
