@@ -7,7 +7,7 @@ import Text from "@tiptap/extension-text";
 import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import Link from "@tiptap/extension-link";
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle } from "@/components/dashboard/ui/toggle";
 import { FontBoldIcon, FontItalicIcon } from "@radix-ui/react-icons";
 
 const TextEditor = ({

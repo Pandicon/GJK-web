@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import { Pencil2Icon } from "@radix-ui/react-icons";
 import Link from "next/link";
 

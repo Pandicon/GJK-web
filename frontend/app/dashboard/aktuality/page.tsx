@@ -3,22 +3,19 @@ import React from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/dashboard/ui/card";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/dashboard/ui/table";
 import { getArticles } from "@/lib/actions";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/dashboard/ui/button";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import {
@@ -34,12 +31,14 @@ const Aktuality = async () => {
   if (session && (session.perms & 8) == 8) {
     return (
       <>
-        <Button className="mb-2" asChild>
-          <Link href="/dashboard/nova-aktualita">
-            <PlusCircledIcon className="mr-2" />
-            Nová aktualita
-          </Link>
-        </Button>
+        <div className="flex justify-end">
+          <Button className="mb-2" asChild>
+            <Link href="/dashboard/nova-aktualita">
+              <PlusCircledIcon className="mr-2" />
+              Nová aktualita
+            </Link>
+          </Button>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>Aktuality</CardTitle>

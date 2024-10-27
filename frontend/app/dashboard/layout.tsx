@@ -1,5 +1,5 @@
 import Sidebar from "@/components/dashboard/sidebar";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/dashboard/ui/toaster";
 import { getSession, isValidSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
