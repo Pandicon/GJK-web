@@ -1,62 +1,61 @@
 import Image from "next/image";
 import { partnerLogos } from "@/public/logos/";
 import headerImage from "@/public/images/header.jpeg";
-import styles from "./page.module.css";
-import Button from "@/components/Button";
+import { Button } from "@/components/ui/button";
 import { getAspectRatio } from "@/lib/utils";
 import { getArticles } from "@/lib/actions";
+import Link from "next/link";
 
 export default async function Home() {
   const articles = await getArticles(0);
   return (
     <>
-      <section
-        className={`${styles.twoColumn} ${styles.hero} content-max-width`}
-      >
+      <section className="grid grid-cols-2 items-center max-w-screen-xl mx-auto gap-8">
         <div>
-          <h1>
-            Podporujeme rozvoj <span className={styles.highlight}>každého</span>{" "}
-            studenta
-          </h1>
-          <p>
+          <h1>Podporujeme rozvoj každého studenta</h1>
+          <p className="mb-10">
             Naše výuka podporuje kreativitu, kritické myšlení a zodpovědnost v
             přátelském a podporujícím prostředí. Je to místem, kde se setkávají
             nadaní studenti, kteří společně objevují a rozvíjejí svůj potenciál,
             dosahují vynikajících výsledků a osobního růstu.
           </p>
-          <Button href="#about">ZJISTIT VÍCE</Button>
-          <Button href="/" outline>
-            PŘIJMACÍ ŘÍZENÍ
-          </Button>
-        </div>
-        <Image src={headerImage} alt="" />
-      </section>
-      <section
-        className={`bg-blue ${styles.articles} ${styles.sectionPadding}`}
-      >
-        <div className="content-max-width">
-          <h2>Aktuality</h2>
-          <div className={styles.articleWrapper}>
-            {articles.slice(0, 3).map((a) => (
-              <article key={a.id}>
-                <h3>{a.title}</h3>
-                <p>{a.content}</p>
-              </article>
-            ))}
+          <div className="flex gap-4">
+            <Button asChild>
+              <Link href="#about">ZJISTIT VÍCE</Link>
+            </Button>
+            <Button variant="outline">PŘIJMACÍ ŘÍZENÍ</Button>
           </div>
-          <Button href="/" outline>
-            VŠECHNY AKTUALITY
-          </Button>
         </div>
+        <Image
+          src={headerImage}
+          alt=""
+          className="rounded-lg aspect-square object-cover"
+        />
+      </section>
+      <section className="max-w-screen-xl mx-auto py-16">
+        <h2 className="mb-2">Aktuality</h2>
+        <div className="flex flex-col gap-4 mb-8">
+          {articles.slice(0, 3).map((a) => (
+            <article key={a.id} className="border p-4 rounded-lg">
+              <h3>{a.title}</h3>
+              <p>{a.content}</p>
+            </article>
+          ))}
+        </div>
+        <Button>VŠECHNY AKTUALITY</Button>
       </section>
       <section
         id="about"
-        className={`${styles.twoColumn} ${styles.sectionPadding} content-max-width`}
+        className="grid grid-cols-2 items-center max-w-screen-xl mx-auto gap-8 py-8"
       >
-        <Image src={headerImage} alt="" />
+        <Image
+          src={headerImage}
+          alt=""
+          className="object-cover aspect-square"
+        />
         <div>
           <h2>O škole</h2>
-          <p>
+          <p className="mb-10">
             Gymnázium Jana Keplera je moderní střední škola zaměřená na rozvoj
             talentů a silných stránek každého studenta. Naše výuka podporuje
             kreativitu, kritické myšlení a zodpovědnost v přátelském a
@@ -65,22 +64,19 @@ export default async function Home() {
             kde se setkávají nadaní studenti, kteří objevují a rozvíjejí svůj
             potenciál, dosahují vynikajících výsledků a osobního růstu.
           </p>
-          <Button href="https://sites.google.com/a/gjk.cz/svp/home" outline>
-            ŠVP
-          </Button>
+          <Button>ŠVP</Button>
         </div>
       </section>
-      <section className={`${styles.partners}`}>
-        <div className={`content-max-width ${styles.partnerLogos}`}>
-          {partnerLogos.map((logo, index) => (
-            <Image
-              src={logo}
-              alt=""
-              key={index}
-              style={{ flex: getAspectRatio(logo) }}
-            />
-          ))}
-        </div>
+      <section className="max-w-screen-xl mx-auto py-10 grayscale flex justify-between gap-8">
+        {partnerLogos.map((logo, index) => (
+          <Image
+            src={logo}
+            alt=""
+            key={index}
+            style={{ flex: getAspectRatio(logo) }}
+            className="w-full h-auto"
+          />
+        ))}
       </section>
     </>
   );

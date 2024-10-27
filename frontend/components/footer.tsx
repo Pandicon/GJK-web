@@ -1,14 +1,13 @@
 import React from "react";
-import styles from "./Footer.module.css";
 
 const Footer = () => {
   return (
-    <footer className={`bg-blue ${styles.footer}`}>
-      <div className={`content-max-width ${styles.footerContent}`}>
+    <footer className="py-4 mx-auto max-w-screen-xl">
+      <div className="flex justify-between">
         <h3>Gymnázium Jana Keplera</h3>
-        <div className={styles.footerLinks}>
+        <div className="flex gap-10">
           <div>
-            <span className={styles.title}> Kontakt</span>
+            <span className="font-semibold"> Kontakt</span>
             <ul>
               <li>Parléřova 2, 169 00, Praha 6</li>
               <li>+420 233 352 546</li>
@@ -18,13 +17,13 @@ const Footer = () => {
             </ul>
           </div>
           <div>
-            <span className={styles.title}>Zřizovatel</span>
+            <span className="font-semibold">Zřizovatel</span>
             <ul>
               <li>Hlavní město Praha</li>
             </ul>
           </div>
           <div>
-            <span className={styles.title}>Informace</span>
+            <span className="font-semibold">Informace</span>
             <ul>
               <li>GDPR</li>
               <li>Informace o povinném subjektu</li>
