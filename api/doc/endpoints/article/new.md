@@ -9,7 +9,6 @@ Expects json body
 ```json
 {
 	"title":"<string title>",
-	"author":"<string author>",
 	"content":"<string content>",
 	"tags":["<string tag>", "<string tag 2> ..."],
 	"thumbnail_id":42,
