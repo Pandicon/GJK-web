@@ -65,6 +65,11 @@ impl ArticleDB {
 		Ok(id)
 	}
 
+	pub fn rename_author(&self, author_mail: &str, author_name: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+		self.con.execute("UPDATE article SET author_name = ?1 WHERE author_email = ?2;", rusqlite::params![author_name, author_mail])?;
+		Ok(())
+	}
+
 	fn create(&self) {
 		if let Err(e) = self.con.execute("CREATE VIRTUAL TABLE article USING FTS5(title, author_email, author_name, content, tags);", []) { tracing::error!("Failed to create article FTS5 table: {}", e); }
 		if let Err(e) = self.con.execute("CREATE TABLE article_meta (id INTEGER NOT NULL PRIMARY KEY, timestamp INTEGER NOT NULL, thumbnail INTEGER NOT NULL);", []) { tracing::error!("Failed to create article_meta table: {}", e); }
