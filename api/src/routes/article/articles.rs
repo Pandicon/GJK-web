@@ -1,6 +1,5 @@
 use axum::response::IntoResponse;
-use crate::article::ArticleWithAuthorNameWithoutAuthorEmail;
-use crate::USER_DB;
+use crate::article::ArticleWithoutAuthorEmail;
 
 pub const _ROUTE: &str = "/article/articles";
 pub const _PERMISSIONS: &str = "NONE";
@@ -12,27 +11,18 @@ pub struct Page {
 }
 #[derive(serde::Serialize)]
 struct ArticleList {
-	pub articles : Vec<ArticleWithAuthorNameWithoutAuthorEmail>
+	pub articles : Vec<ArticleWithoutAuthorEmail>
 }
 
 pub async fn callback(axum::extract::Query(page): axum::extract::Query<Page>) -> axum::response::Response<axum::body::Body> {
 	let adb = crate::ARTICLE_DB.lock().unwrap();
 	match adb.as_ref().unwrap().get_chronol(page.page as usize, 10) {
 		Ok(al) => {
-			let articles_with_author_names = al.into_iter().map(|article| {
-				let author_name = match USER_DB.lock().unwrap().as_ref().unwrap().get_name(&article.author_email) {
-					Ok(name) => name,
-					Err(err) => {
-						tracing::error!("Failed to get name of user {}: {}", article.author_email, err);
-						None
-					}
-				};
-				ArticleWithAuthorNameWithoutAuthorEmail::from_article(article, author_name)
-			}).collect();
+			let articles_without_author_emails = al.into_iter().map(|article| ArticleWithoutAuthorEmail::from_article(article)).collect();
 			(
 				axum::http::StatusCode::OK,
 				[(axum::http::header::CONTENT_TYPE, "application/json")],
-				match serde_json::ser::to_string(&ArticleList{articles: articles_with_author_names}) {
+				match serde_json::ser::to_string(&ArticleList{articles: articles_without_author_emails }) {
 					Ok(json) => json,
 					Err(e) => {
 						tracing::error!("Couldn't serialize articles: {}", e);
