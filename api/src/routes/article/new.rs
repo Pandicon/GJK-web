@@ -24,6 +24,7 @@ pub async fn callback(Extension(user_data): Extension<Option<User>>, axum::extra
 	let mut article = u_article.clone();
 	article.create_timestamp = tm;
 	article.author_email = user_data.mail;
+	article.author_name = user_data.name;
 	match adb.as_ref().unwrap().add(&article) {
 		Ok(_) => {
 			tracing::info!("Article {} by {} added", article.title, article.author_email);
