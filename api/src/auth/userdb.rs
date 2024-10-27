@@ -35,6 +35,7 @@ impl UserDB {
 	}
 	pub fn update_name(&self, mail: &str, name: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
 		self.con.execute("UPDATE user SET name = ?1 WHERE mail = ?2;", rusqlite::params![name, mail])?;
+		crate::ARTICLE_DB.lock().unwrap().as_ref().unwrap().rename_author(mail, name)?; // TODO: What if this call fails?
 		Ok(())
 	}
 	pub fn get_perms(&self, mail: &str) -> Result<u32, Box<dyn std::error::Error>> {
