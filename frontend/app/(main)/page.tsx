@@ -10,7 +10,7 @@ export default async function Home() {
   const articles = await getArticles(0);
   return (
     <>
-      <section className="grid grid-cols-2 items-center max-w-screen-xl mx-auto gap-8">
+      <section className="grid grid-cols-2 items-center px-20 gap-8 pb-16 clamp-width">
         <div>
           <h1>Podporujeme rozvoj každého studenta</h1>
           <p className="mb-10">
@@ -32,26 +32,31 @@ export default async function Home() {
           className="rounded-lg aspect-square object-cover"
         />
       </section>
-      <section className="max-w-screen-xl mx-auto py-16">
-        <h2 className="mb-2">Aktuality</h2>
-        <div className="flex flex-col gap-4 mb-8">
-          {articles.slice(0, 3).map((a) => (
-            <article key={a.id} className="border p-4 rounded-lg">
-              <h3>{a.title}</h3>
-              <p>{a.content}</p>
-            </article>
-          ))}
+      <section className="py-16 bg-secondary">
+        <div className="clamp-width">
+          <h2>Aktuality</h2>
+          <div className="flex flex-col gap-4 mb-8">
+            {articles.slice(0, 3).map((a) => (
+              <article
+                key={a.id}
+                className="border p-4 rounded-lg bg-background"
+              >
+                <h3>{a.title}</h3>
+                <p>{a.content}</p>
+              </article>
+            ))}
+          </div>
+          <Button>VŠECHNY AKTUALITY</Button>
         </div>
-        <Button>VŠECHNY AKTUALITY</Button>
       </section>
       <section
         id="about"
-        className="grid grid-cols-2 items-center max-w-screen-xl mx-auto gap-8 py-8"
+        className="grid grid-cols-2 items-center gap-8 py-16 clamp-width"
       >
         <Image
           src={headerImage}
           alt=""
-          className="object-cover aspect-square"
+          className="object-cover aspect-square rounded-lg"
         />
         <div>
           <h2>O škole</h2>
@@ -67,16 +72,18 @@ export default async function Home() {
           <Button>ŠVP</Button>
         </div>
       </section>
-      <section className="max-w-screen-xl mx-auto py-10 grayscale flex justify-between gap-8">
-        {partnerLogos.map((logo, index) => (
-          <Image
-            src={logo}
-            alt=""
-            key={index}
-            style={{ flex: getAspectRatio(logo) }}
-            className="w-full h-auto"
-          />
-        ))}
+      <section className="py-16 grayscale bg-secondary">
+        <div className="clamp-width flex justify-between gap-8">
+          {partnerLogos.map((logo, index) => (
+            <Image
+              src={logo}
+              alt=""
+              key={index}
+              style={{ flex: getAspectRatio(logo) }}
+              className="w-full h-auto"
+            />
+          ))}
+        </div>
       </section>
     </>
   );

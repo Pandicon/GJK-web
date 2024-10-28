@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { schoolLogo } from "@/public/logos";
-import eSborovnaIcon from "@/public/icons/fa-solid--chalkboard-teacher.svg";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,9 +64,9 @@ const navLinks: Array<NavItem> = [
 
 const Navbar = () => {
   return (
-    <div className="max-w-screen-xl flex justify-between mx-auto py-4">
+    <div className="clamp-width flex justify-between items-center py-4">
       <Link href="/">
-        <Image src={schoolLogo} alt="Gymnázium Jana Keplera" />
+        <Image src={schoolLogo} alt="Gymnázium Jana Keplera" className="h-10" />
       </Link>
       <NavigationMenu>
         <NavigationMenuList>
