@@ -18,8 +18,8 @@ impl ArticleDB {
 	pub fn get_no_meta(&self, id : i64) -> Result<Article, Box<dyn std::error::Error>> {
 		let mut s = self.con.prepare("SELECT * FROM article WHERE rowid = ?1")?;
 		Ok(s.query_row([id], |r| {
-			let tags_str : String = r.get(3)?;
-			Ok(Article{id, title: r.get(0)?, author: r.get(1)?, content: r.get(2)?,
+			let tags_str : String = r.get(4)?;
+			Ok(Article{id, title: r.get(0)?, author_email: r.get(1)?, author_name: r.get(2)?, content: r.get(3)?,
 				tags: tags_str.split(';').map(|x| x.to_owned()).collect::<Vec<String>>(),
 				create_timestamp: 0, thumbnail_id: 0 })
 		})?)
@@ -36,7 +36,7 @@ impl ArticleDB {
 		let mut s = self.con.prepare("SELECT id, timestamp, thumbnail FROM article_meta ORDER BY timestamp DESC LIMIT ?1 OFFSET ?2;")?;
 		let al = s.query_map([pagesize, page * pagesize], |r| Ok(Article{
 			id: r.get(0)?, create_timestamp: r.get(1)?, thumbnail_id: r.get(2)?,
-			tags: vec![], title: String::new(), author: String::new(), content: String::new()}))?;
+			tags: vec![], title: String::new(), author_email: String::new(), author_name: None, content: String::new()}))?;
 		let mut out = Vec::new();
 		for a in al {
 			out.push(a?);
@@ -44,11 +44,12 @@ impl ArticleDB {
 		let mut s2 = self.con.prepare("SELECT * FROM article WHERE rowid = ?1;")?;
 		for a in out.iter_mut() {
 			s2.query_row([a.id], |r| {
-				let tags_str : String = r.get(3)?;
+				let tags_str : String = r.get(4)?;
 				a.tags = tags_str.split(';').map(|x| x.to_owned()).collect::<Vec<String>>();
 				a.title = r.get(0)?;
-				a.author = r.get(1)?;
-				a.content = r.get(2)?;
+				a.author_email = r.get(1)?;
+				a.author_name = r.get(2)?;
+				a.content = r.get(3)?;
 				Ok(())
 			})?;
 		}
@@ -57,15 +58,20 @@ impl ArticleDB {
 	/// article id is ignored, actual is returned
 	pub fn add(&self, a : &Article) -> Result<i64, Box<dyn std::error::Error>> {
 		self.con.execute("BEGIN TRANSACTION", [])?;
-		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4)", rusqlite::params![a.title, a. author, a.content, a.tags.join(";")])?;
+		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4, ?5)", rusqlite::params![a.title, a.author_email, a.author_name, a.content, a.tags.join(";")])?;
 		let id = self.con.last_insert_rowid();
 		self.con.execute("INSERT INTO article_meta VALUES (?1, ?2, ?3);", rusqlite::params![id, a.create_timestamp, a.thumbnail_id])?;
 		self.con.execute("END TRANSACTION", [])?;
 		Ok(id)
 	}
 
+	pub fn rename_author(&self, author_mail: &str, author_name: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+		self.con.execute("UPDATE article SET author_name = ?1 WHERE author_email = ?2;", rusqlite::params![author_name, author_mail])?;
+		Ok(())
+	}
+
 	fn create(&self) {
-		if let Err(e) = self.con.execute("CREATE VIRTUAL TABLE article USING FTS5(title, author, content, tags);", []) { tracing::error!("Failed to create article FTS5 table: {}", e); }
+		if let Err(e) = self.con.execute("CREATE VIRTUAL TABLE article USING FTS5(title, author_email, author_name, content, tags);", []) { tracing::error!("Failed to create article FTS5 table: {}", e); }
 		if let Err(e) = self.con.execute("CREATE TABLE article_meta (id INTEGER NOT NULL PRIMARY KEY, timestamp INTEGER NOT NULL, thumbnail INTEGER NOT NULL);", []) { tracing::error!("Failed to create article_meta table: {}", e); }
 		// maybe add another table for quicker orderby timestamp?
 	}

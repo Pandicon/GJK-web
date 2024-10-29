@@ -6,8 +6,9 @@ Expects json body
 
 ```json
 {
-	"mail":"<string mail>",
-	"perms":<uint perms>
+    "mail":"<string mail>",
+    "name":"<string name>",
+    "perms":<uint perms>
 }
 ```
 
@@ -15,7 +16,7 @@ creates new user and replies with json
 
 ```json
 {
-	"message":"<message>",
+    "message":"<message>",
 }
 ```
 

@@ -6,8 +6,9 @@ Expects json body
 
 ```json
 {
-	"mail":"<string mail>",
-	"perms":<uint perms>
+    "mail":"<string mail>",
+    "name":"<string name>",
+    "perms":<uint perms>
 }
 ```
 
@@ -15,7 +16,7 @@ updates user with mail `mail` permissions and replies with json
 
 ```json
 {
-	"message":"<message>",
+    "message":"<message>",
 }
 ```
 
@@ -29,7 +30,7 @@ If the user sends invalid body the server replies with status code 400 but with 
 
 ### 409 Conflict
 
-If the user doesn't exists, the server replies with status code `409 Conflict` with the same json body.
+If the user doesn't exist, the server replies with status code `409 Conflict` with the same json body.
 
 ### 500 Internal server error
 

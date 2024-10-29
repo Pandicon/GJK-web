@@ -9,6 +9,7 @@ mod calendar;
 mod config;
 mod dates;
 mod permissions_middleware;
+mod user_data_middleware;
 mod routes;
 mod structs;
 mod suplovani;
@@ -50,7 +51,7 @@ async fn main() {
 	if config.debug_tokens_enabled.unwrap_or(false) {
 		for u in USER_DB.lock().unwrap().as_ref().unwrap().get().unwrap() {
 			let token = TOKEN_STORAGE.lock().unwrap().as_ref().unwrap().create(&u.0);
-			tracing::info!("debug token {} (perms {}): {}", u.0, u.1, auth::token_storage::token_to_str(&token));
+			tracing::info!("debug token {} (perms {}): {}", u.0, u.2, auth::token_storage::token_to_str(&token));
 		};
 	}
 
@@ -117,7 +118,7 @@ async fn main() {
 								.unwrap()
 								.as_ref()
 								.unwrap()
-								.get_perms_or_add_with(&mail, *crate::PERMISSION_FLAGS.get("GJK_DEFAULT").unwrap());
+								.get_perms_or_add_with(&mail, None, *crate::PERMISSION_FLAGS.get("GJK_DEFAULT").unwrap());
 							match perms {
 								Ok(p) => {
 									tracing::info!("gjk user {} logged in with perms {}", mail, p);

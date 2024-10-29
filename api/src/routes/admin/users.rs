@@ -1,14 +1,10 @@
 use axum::response::IntoResponse;
+use crate::auth::userdb::User;
 
 pub const _ROUTE: &str = "/admin/users";
 pub const _PERMISSIONS: &str = "MANAGE_USERS";
 pub const _TYPE: &str = "GET";
 
-#[derive(serde::Serialize)]
-struct User {
-	pub mail: String,
-	pub perms: u32,
-}
 #[derive(serde::Serialize)]
 struct UserList {
 	pub users: std::vec::Vec<User>,
@@ -20,8 +16,8 @@ pub async fn callback() -> axum::response::Response<axum::body::Body> {
 			let mut l = UserList {
 				users: std::vec::Vec::with_capacity(ul.len()),
 			};
-			for (m, p) in ul.iter() {
-				l.users.push(User { mail: m.clone(), perms: *p });
+			for (m, n, p) in ul.iter() {
+				l.users.push(User { mail: m.clone(), name: n.clone(), perms: *p });
 			}
 			axum::Json(l).into_response()
 		}
