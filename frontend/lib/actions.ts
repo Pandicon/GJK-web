@@ -32,7 +32,6 @@ export async function postArticle(
   const res = await fetch(`${process.env.API_HOST}/article/new`, {
     body: JSON.stringify({
       title: title,
-      author: "Placeholder Author",
       content: articleContent,
       tags: tags ?? [],
       thumbnail_id: thumbnail_id ?? 0,
