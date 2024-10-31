@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { partnerLogos } from "@/public/logos/";
 import headerImage from "@/public/images/header.jpeg";
+import aboutImage from "@/public/images/about.jpg";
 import { Button } from "@/components/ui/button";
 import { getAspectRatio } from "@/lib/utils";
 import { getArticles } from "@/lib/actions";
@@ -54,7 +55,7 @@ export default async function Home() {
         className="grid grid-cols-2 items-center gap-8 py-16 clamp-width"
       >
         <Image
-          src={headerImage}
+          src={aboutImage}
           alt=""
           className="object-cover aspect-square rounded-lg"
         />
