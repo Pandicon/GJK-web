@@ -64,7 +64,7 @@ const Aktuality = async () => {
                       )}
                     </TableCell>
                     <TableCell>{a.title}</TableCell>
-                    <TableCell>{a.author}</TableCell>
+                    <TableCell>{a.author_name}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
