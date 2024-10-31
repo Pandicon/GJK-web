@@ -98,7 +98,7 @@ impl UserDB {
 		Ok(s.query_row([mail], |r| r.get(0))?)
 	}
 	fn create_table(&self) {
-		if let Err(e) = self.con.execute("CREATE TABLE user (mail TEXT, name TEXT, perms INTEGER);", []) { tracing::error!("Failed to create user table: {}", e); }
+		if let Err(e) = self.con.execute("CREATE TABLE user (mail TEXT NOT NULL, name TEXT, perms INTEGER NOT NULL);", []) { tracing::error!("Failed to create user table: {}", e); }
 	}
 	pub fn _print(&self) -> Result<(), Box<dyn std::error::Error>> {
 		let mut s = self.con.prepare("SELECT mail, name, perms FROM user;")?;
