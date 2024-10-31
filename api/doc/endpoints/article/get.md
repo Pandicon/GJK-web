@@ -1,11 +1,11 @@
-# GET /article/articles
+# GET /article/get
 
 required permissions: `NONE`
 
 Expects url parameter like this:
 
 ```
-/article/articles?id=4
+/article/get?id=4
 ```
 
 gets article with specified id as json:
@@ -38,3 +38,4 @@ If the database requests fail, the server replies with status code `500 Internal
 }
 ```
 
+This happens even if the article doesn't exist, which will probably change in the future.
