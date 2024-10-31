@@ -28,6 +28,7 @@ const TextEditor = ({
         class: "min-h-40 px-3 py-2 focus:outline-none",
       },
     },
+    immediatelyRender: false,
   });
   return (
     <div className="border rounded-md">
