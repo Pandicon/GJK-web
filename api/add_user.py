@@ -16,5 +16,6 @@ if a.list:
 	for x in c.fetchall():
 		print(x)
 	sys.exit(0)
-c.execute(f"INSERT INTO user(mail, name, perms) VALUES (?, ?, {a.perms});", (a.mail, a.name,))
+name = None if a.name == "0" else a.name
+c.execute(f"INSERT INTO user(mail, name, perms) VALUES (?, ?, {a.perms});", (a.mail, name,))
 con.commit()

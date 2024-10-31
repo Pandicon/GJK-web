@@ -1,0 +1,5 @@
+migrate
+./userdb.db
+user
+(mail TEXT NOT NULL, name TEXT, perms INTEGER NOT NULL)
+f"('{esc_str(x[0])}', NULL, {x[1]})"
