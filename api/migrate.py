@@ -33,7 +33,10 @@ for x in c.fetchall():
 	data.append(x)
 print(f"removing and recreating table...")
 c.execute(f"DROP TABLE {table};")
-c.execute(f"CREATE TABLE {table} {fields};")
+if fields.startswith("USING"):
+	c.execute(f"CREATE virtual TABLE {table} {fields};")
+else:
+	c.execute(f"CREATE TABLE {table} {fields};")
 print(f"inserting new data...")
 def esc_str(s):
 	return s.replace("'", "''")
