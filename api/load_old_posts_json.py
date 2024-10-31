@@ -16,7 +16,7 @@ if "--clear" in sys.argv:
 for post_i,post in enumerate(data):
 	content = "<br>".join(s.replace("'", "''") for s in post['contents'])
 	tags = ';'.join([post['categories']])
-	cmd = f"INSERT INTO article VALUES ('{post['title']}', '{post['author']}', '{content}', '{tags}')"
+	cmd = f"INSERT INTO article VALUES ('{post['title']}', 'nikdo', '{post['author']}', '{content}', '{tags}')"
 	try:
 		c.execute(cmd)
 	except Exception as e:
