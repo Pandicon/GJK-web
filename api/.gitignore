@@ -27,3 +27,4 @@ stare_clanky.json
 link
 /client/
 /testing_scripts/
+*.db.backup

@@ -1,0 +1,5 @@
+migrate
+./articles.db
+article
+USING FTS5(title, author_email, author_name, content, tags)
+f"('{esc_str(x[0])}', '', '{esc_str(x[1])}', '{esc_str(x[2])}', '{esc_str(x[3])}')"
