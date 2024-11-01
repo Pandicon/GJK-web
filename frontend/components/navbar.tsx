@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { schoolLogo } from "@/public/logos";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { SearchIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -55,6 +55,7 @@ const navLinks: Array<NavItem> = [
   },
   {
     name: "Fotogalerie",
+    href: "/fotogalerie",
   },
   {
     name: "eSborovna",
@@ -104,7 +105,12 @@ const Navbar = () => {
       </NavigationMenu>
       <div>
         <Button variant="ghost" size="icon">
-          <MagnifyingGlassIcon />
+          <SearchIcon size={20} strokeWidth={2.5} />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <Link href="/dashboard">
+            <UserIcon size={20} strokeWidth={2.5} />
+          </Link>
         </Button>
       </div>
     </div>
