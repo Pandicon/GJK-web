@@ -9,7 +9,7 @@ export default function MainLayout({
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      <main className="flex-grow flex flex-col">{children}</main>
       <Footer />
     </>
   );
