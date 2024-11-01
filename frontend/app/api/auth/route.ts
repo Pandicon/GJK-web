@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const token = json.token;
   const perms = json.perms;
 
-  createSession(token, perms);
+  await createSession(token, perms);
   console.log("User logged in with perms " + perms);
   redirect("/dashboard");
 }

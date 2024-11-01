@@ -35,11 +35,11 @@ export async function createSession(token: string, perms: number) {
   };
   const sessionToken = await encrypt(session);
 
-  setSessionCookie(sessionToken, expiresAt);
+  await setSessionCookie(sessionToken, expiresAt);
 }
 
 export async function getSession() {
-  const jwt = cookies().get("session")?.value;
+  const jwt = (await cookies()).get("session")?.value;
   if (!jwt) return undefined;
   const session = await decrypt(jwt);
   return session;
@@ -60,12 +60,12 @@ export async function isValidSession(session: SessionData) {
   return true;
 }
 
-export function deleteSession() {
-  cookies().delete("session");
+export async function deleteSession() {
+  (await cookies()).delete("session");
 }
 
-function setSessionCookie(sessionToken: string, expiresAt: Date) {
-  cookies().set("session", sessionToken, {
+async function setSessionCookie(sessionToken: string, expiresAt: Date) {
+  (await cookies()).set("session", sessionToken, {
     httpOnly: true,
     secure: true,
     expires: expiresAt,
