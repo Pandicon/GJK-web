@@ -18,7 +18,7 @@ pub async fn callback(axum::extract::Query(page): axum::extract::Query<Page>) ->
 	let adb = crate::ARTICLE_DB.lock().unwrap();
 	match adb.as_ref().unwrap().get_chronol(page.page as usize, 10) {
 		Ok(al) => {
-			let articles_without_author_emails = al.into_iter().map(|article| ArticleWithoutAuthorEmail::from_article(article)).collect();
+			let articles_without_author_emails = al.into_iter().map(ArticleWithoutAuthorEmail::from_article).collect();
 			(
 				axum::http::StatusCode::OK,
 				[(axum::http::header::CONTENT_TYPE, "application/json")],
