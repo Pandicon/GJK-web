@@ -31,7 +31,6 @@ pub async fn callback(axum::extract::Query(aid): axum::extract::Query<ArticleID>
 			(axum::http::StatusCode::NOT_FOUND, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"Article does not exist\"}").into_response()
 		}
 		Err(e) => {
-			// TODO: return other error if the article doesn't exist
 			tracing::error!("Couldn't get the article (id {}): {}", aid.id, e);
 			(axum::http::StatusCode::INTERNAL_SERVER_ERROR, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"Unable to get the article\"}").into_response()
 		}
