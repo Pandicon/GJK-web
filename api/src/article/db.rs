@@ -1,3 +1,4 @@
+use rusqlite::OptionalExtension;
 use crate::article::Article;
 
 const ARTICLES_DB_FILE : &str = "./articles.db";
@@ -15,22 +16,24 @@ impl ArticleDB {
 		}
 		out
 	}
-	pub fn get_no_meta(&self, id : i64) -> Result<Article, Box<dyn std::error::Error>> {
+	pub fn get_no_meta(&self, id : i64) -> Result<Option<Article>, Box<dyn std::error::Error>> {
 		let mut s = self.con.prepare("SELECT * FROM article WHERE rowid = ?1")?;
 		Ok(s.query_row([id], |r| {
 			let tags_str : String = r.get(4)?;
 			Ok(Article{id, title: r.get(0)?, author_email: r.get(1)?, author_name: r.get(2)?, content: r.get(3)?,
 				tags: tags_str.split(';').map(|x| x.to_owned()).collect::<Vec<String>>(),
 				create_timestamp: 0, thumbnail_id: 0 })
-		})?)
+		}).optional()?)
 	}
-	pub fn get(&self, id : i64) -> Result<Article, Box<dyn std::error::Error>> {
-		let mut base_out = self.get_no_meta(id)?;
-		let mut s = self.con.prepare("SELECT timestamp, thumbnail FROM article_meta WHERE id = ?1")?;
-		let meta = s.query_row([id], |r| { let timestamp : u64 = r.get(0)?; let thumbnail : u64 = r.get(0)?; Ok((timestamp, thumbnail)) })?;
-		base_out.create_timestamp = meta.0;
-		base_out.thumbnail_id = meta.1;
-		Ok(base_out)
+	pub fn get(&self, id : i64) -> Result<Option<Article>, Box<dyn std::error::Error>> {
+		if let Some(mut base_out) = self.get_no_meta(id)? {
+			let mut s = self.con.prepare("SELECT timestamp, thumbnail FROM article_meta WHERE id = ?1")?;
+			let meta = s.query_row([id], |r| { let timestamp : u64 = r.get(0)?; let thumbnail : u64 = r.get(0)?; Ok((timestamp, thumbnail)) })?;
+			base_out.create_timestamp = meta.0;
+			base_out.thumbnail_id = meta.1;
+			return Ok(Some(base_out));
+		}
+		Ok(None)
 	}
 	pub fn get_chronol(&self, page : usize, pagesize : usize) -> Result<Vec<Article>, Box<dyn std::error::Error>> {
 		let mut s = self.con.prepare("SELECT id, timestamp, thumbnail FROM article_meta ORDER BY timestamp DESC LIMIT ?1 OFFSET ?2;")?;
