@@ -15,7 +15,7 @@ pub async fn callback(Extension(user_data): Extension<Option<User>>, axum::extra
 			return (
 				http::StatusCode::INTERNAL_SERVER_ERROR,
 				[(http::header::CONTENT_TYPE, "application/json")],
-				format!("{{\"message\": \"Failed to get user data\"}}")
+				"{\"message\": \"Failed to get user data\"}"
 			).into_response();
 		}
 	};
