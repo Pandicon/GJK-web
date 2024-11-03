@@ -1,5 +1,6 @@
 use rusqlite::OptionalExtension;
 use crate::article::Article;
+use crate::routes::article::edit::EditArticle;
 
 const ARTICLES_DB_FILE : &str = "./articles.db";
 pub struct ArticleDB {
@@ -64,6 +65,28 @@ impl ArticleDB {
 		self.con.execute("INSERT INTO article VALUES (?1, ?2, ?3, ?4, ?5)", rusqlite::params![a.title, a.author_email, a.author_name, a.content, a.tags.join(";")])?;
 		let id = self.con.last_insert_rowid();
 		self.con.execute("INSERT INTO article_meta VALUES (?1, ?2, ?3);", rusqlite::params![id, a.create_timestamp, a.thumbnail_id])?;
+		self.con.execute("END TRANSACTION", [])?;
+		Ok(id)
+	}
+
+	/// Edits the old article with new article data
+	///
+	/// Only edits: Title, content, tags, thumbnail id
+	///
+	/// The rest is ignored
+	pub fn edit(&self, id: i64, a: &EditArticle) -> Result<(), Box<dyn std::error::Error>> {
+		self.con.execute("BEGIN TRANSACTION", [])?;
+		self.con.execute("UPDATE article SET title = ?1, content = ?2, tags = ?3 WHERE rowid = ?4;", rusqlite::params![a.title, a.content, a.tags.join(";"), id])?;
+		self.con.execute("UPDATE article_meta SET thumbnail = ?1 WHERE id = ?2;", rusqlite::params![a.thumbnail_id, id])?;
+		self.con.execute("END TRANSACTION", [])?;
+		Ok(())
+	}
+
+	/// Deletes the article
+	pub fn delete(&self, id: i64) -> Result<i64, Box<dyn std::error::Error>> {
+		self.con.execute("BEGIN TRANSACTION", [])?;
+		self.con.execute("DELETE FROM article WHERE rowid = ?1;", rusqlite::params![id])?;
+		self.con.execute("DELETE FROM article_meta WHERE id = ?1;", rusqlite::params![id])?;
 		self.con.execute("END TRANSACTION", [])?;
 		Ok(id)
 	}

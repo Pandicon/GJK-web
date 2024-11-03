@@ -62,8 +62,8 @@ fn main() {
 			if route.is_empty() {
 				panic!("ROUTE is empty in file {:?}", path.file_stem().unwrap_or_default());
 			}
-			if req_type.is_empty() || (req_type != "get" && req_type != "post") {
-				panic!("Invalid TYPE for route '{route}'. Expected 'GET' or 'POST', got '{req_type}'");
+			if req_type.is_empty() || (req_type != "get" && req_type != "post" && req_type != "put" && req_type != "delete") {
+				panic!("Invalid TYPE for route '{route}'. Expected 'GET', 'POST', 'PUT', or 'DELETE', got '{req_type}'");
 			}
 			let mut permissions: u32 = 0;
 			for flag in permissions_vec {
