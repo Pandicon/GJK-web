@@ -1,11 +1,10 @@
 use axum::response::IntoResponse;
 use axum::extract::Extension;
-use crate::article::Article;
 use crate::auth::userdb::User;
 
 pub const _ROUTE: &str = "/article/edit";
 pub const _PERMISSIONS: &str = "MANAGE_ARTICLES";
-pub const _TYPE: &str = "POST";
+pub const _TYPE: &str = "PUT";
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EditArticle {
