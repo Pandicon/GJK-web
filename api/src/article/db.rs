@@ -74,10 +74,19 @@ impl ArticleDB {
 	/// Only edits: Title, content, tags, thumbnail id
 	///
 	/// The rest is ignored
-	pub fn edit(&self, id: i64, a: &EditArticle) -> Result<i64, Box<dyn std::error::Error>> {
+	pub fn edit(&self, id: i64, a: &EditArticle) -> Result<(), Box<dyn std::error::Error>> {
 		self.con.execute("BEGIN TRANSACTION", [])?;
 		self.con.execute("UPDATE article SET title = ?1, content = ?2, tags = ?3 WHERE rowid = ?4;", rusqlite::params![a.title, a.content, a.tags.join(";"), id])?;
 		self.con.execute("UPDATE article_meta SET thumbnail = ?1 WHERE id = ?2;", rusqlite::params![a.thumbnail_id, id])?;
+		self.con.execute("END TRANSACTION", [])?;
+		Ok(())
+	}
+
+	/// Deletes the article
+	pub fn delete(&self, id: i64) -> Result<i64, Box<dyn std::error::Error>> {
+		self.con.execute("BEGIN TRANSACTION", [])?;
+		self.con.execute("DELETE FROM article WHERE rowid = ?1;", rusqlite::params![id])?;
+		self.con.execute("DELETE FROM article_meta WHERE id = ?1;", rusqlite::params![id])?;
 		self.con.execute("END TRANSACTION", [])?;
 		Ok(id)
 	}
