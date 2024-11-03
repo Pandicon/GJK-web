@@ -16,7 +16,7 @@ pub async fn callback(Extension(user_data): Extension<Option<User>>, axum::extra
 	let user_data = match user_data {
 		Some(ud) => ud,
 		None => {
-			tracing::error!("User data not attached to an 'edit article' endpoint call.");
+			tracing::error!("User data not attached to a 'delete article' endpoint call.");
 			return (
 				http::StatusCode::INTERNAL_SERVER_ERROR,
 				[(http::header::CONTENT_TYPE, "application/json")],
