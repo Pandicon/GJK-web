@@ -1,4 +1,4 @@
-# POST /article/edit
+# PUT /article/edit
 
 \[!\] this endpoint will probably change
 
