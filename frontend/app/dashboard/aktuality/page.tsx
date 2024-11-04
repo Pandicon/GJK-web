@@ -18,12 +18,8 @@ import { getArticles } from "@/lib/actions";
 import { Button } from "@/components/dashboard/ui/button";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import { getSession } from "@/lib/session";
+import ArticleActions from "@/components/dashboard/article-actions";
 
 const Aktuality = async () => {
   const session = await getSession();
@@ -66,13 +62,7 @@ const Aktuality = async () => {
                     <TableCell>{a.title}</TableCell>
                     <TableCell>{a.author_name}</TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <DotsVerticalIcon />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      </DropdownMenu>
+                      <ArticleActions articleId={a.id} />
                     </TableCell>
                   </TableRow>
                 ))}
