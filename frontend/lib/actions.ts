@@ -3,42 +3,25 @@ import { Article } from "./definitions";
 import { getSession } from "./session";
 
 export async function getArticles(page: number) {
-  const res = await fetch(
-    `${process.env.API_HOST}/article/articles?page=${page}`,
-    {
-      cache: "no-cache", // TODO: Revalidate cache when an article is added, edited or deleted.
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch articles");
-  }
-
-  const json = await res.json();
-  return json?.articles as Array<Article>;
+  return await apiFetch(`/article/articles?page=${page}`, {
+    cache: "no-cache", // TODO: Revalidate cache when an article is added, edited or deleted.
+  }).then(async (res) => (await res.json()).articles as Array<Article>);
 }
 
 export async function postArticle(
   title: string,
   articleContent: string,
-  tags?: string[],
-  thumbnail_id?: number,
+  tags: Array<string> = [],
 ) {
-  const session = await getSession();
-
-  const res = await fetch(`${process.env.API_HOST}/article/new`, {
+  const res = await authorizedApiFetch("/article/new", {
     body: JSON.stringify({
       title: title,
       content: articleContent,
-      tags: tags ?? [],
-      thumbnail_id: thumbnail_id ?? 0,
+      tags: tags,
+      thumbnail_id: 0,
     }),
     method: "POST",
     headers: {
-      Authorization: `Bearer ${session?.token}`,
       "Content-Type": "application/json",
     },
   });
@@ -46,4 +29,21 @@ export async function postArticle(
   if (!res.ok) {
     throw new Error("Failed to post article: " + res.statusText);
   }
+}
+
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  return await fetch(`${process.env.API_HOST}${path}`, init);
+}
+
+async function authorizedApiFetch(
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const session = await getSession();
+  const { headers, ...restRequestInit } = init;
+
+  const updatedHeaders = new Headers(headers);
+  updatedHeaders.append("Authorization", `Bearer ${session?.token}`);
+
+  return await apiFetch(path, { headers: updatedHeaders, ...restRequestInit });
 }
