@@ -34,7 +34,7 @@ pub async fn callback(axum::extract::Query(id): axum::extract::Query<IdType>) ->
 		},
 		Err(e) => {
 			tracing::error!("Couldn't get blob {}: {}", id.id, e);
-			(axum::http::StatusCode::INTERNAL_SERVER_ERROR, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"unable to get articles\"}").into_response()
+			(axum::http::StatusCode::INTERNAL_SERVER_ERROR, [(axum::http::header::CONTENT_TYPE, "application/json")], "{\"message\":\"unable to get blob\"}").into_response()
 		}
 	}
 }
