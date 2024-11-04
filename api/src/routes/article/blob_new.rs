@@ -12,7 +12,7 @@ pub async fn callback(body : axum::body::Body) -> axum::response::Response<axum:
 			(
 				axum::http::StatusCode::CREATED,
 				[(axum::http::header::CONTENT_TYPE, "application/json")],
-				"{\"message\":\"blob added\", \"id\":".to_owned() + &id.to_string() + "\"}",
+				"{\"message\":\"blob added\", \"id\":".to_owned() + &id.to_string() + "}",
 			).into_response()
 		},
 		Err(e) => {
