@@ -15,14 +15,17 @@ export async function getArticles(page: number) {
 export async function postArticle(
   title: string,
   articleContent: string,
+  thumbnail: ArrayBuffer,
   tags: Array<string> = [],
 ) {
+  const thumbnailId = await newBlob(thumbnail);
+
   const res = await authorizedApiFetch("/article/new", {
     body: JSON.stringify({
       title: title,
       content: articleContent,
       tags: tags,
-      thumbnail_id: 0,
+      thumbnail_id: thumbnailId,
     }),
     method: "POST",
     headers: {
@@ -49,6 +52,13 @@ export async function deleteArticle(id: number) {
 
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   return await fetch(`${process.env.API_HOST}${path}`, init);
+}
+
+async function newBlob(data: ArrayBuffer) {
+  return await authorizedApiFetch("/blob/new", {
+    method: "POST",
+    body: data,
+  }).then(async (res) => (await res.json()).id as number);
 }
 
 async function authorizedApiFetch(
