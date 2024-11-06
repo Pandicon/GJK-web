@@ -1,12 +1,12 @@
-import "server-only";
+"server-only";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { Session, SessionData, UserPermission } from "./definitions";
+import { UserPermission } from "./definitions";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
 
-async function encrypt(payload: SessionData) {
+async function encrypt(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -15,7 +15,7 @@ async function encrypt(payload: SessionData) {
 }
 
 async function decrypt(jwt: string) {
-  const jwtVerifyResult = await jwtVerify<SessionData>(jwt, encodedKey, {
+  const jwtVerifyResult = await jwtVerify<SessionPayload>(jwt, encodedKey, {
     algorithms: ["HS256"],
   });
   return new Session(jwtVerifyResult.payload);
@@ -23,7 +23,7 @@ async function decrypt(jwt: string) {
 
 export async function createSession(token: string, perms: number) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session: SessionData = {
+  const session: SessionPayload = {
     token: token,
     perms: perms,
     expiresAt: expiresAt,
@@ -52,4 +52,44 @@ async function setSessionCookie(sessionToken: string, expiresAt: Date) {
     sameSite: "lax",
     path: "/",
   });
+}
+
+export type SessionPayload = {
+  token: string;
+  perms: number;
+  expiresAt: Date;
+};
+
+class Session implements JWTPayload {
+  [propName: string]: unknown;
+  iss?: string | undefined;
+  sub?: string | undefined;
+  aud?: string | string[] | undefined;
+  jti?: string | undefined;
+  nbf?: number | undefined;
+  exp?: number | undefined;
+  iat?: number | undefined;
+
+  payload: SessionPayload;
+
+  constructor(payload: SessionPayload) {
+    this.payload = payload;
+  }
+
+  hasPermission(permission: UserPermission): boolean {
+    return (this.payload.perms & permission) == permission;
+  }
+
+  async isValid() {
+    const res = await fetch(`${process.env.API_HOST}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${this.payload.token}`,
+      },
+    });
+
+    if (res.status == 400) {
+      return false;
+    }
+    return true;
+  }
 }
