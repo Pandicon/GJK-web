@@ -69,7 +69,7 @@ async function authorizedApiFetch(
   const { headers, ...restRequestInit } = init;
 
   const updatedHeaders = new Headers(headers);
-  updatedHeaders.append("Authorization", `Bearer ${session?.token}`);
+  updatedHeaders.append("Authorization", `Bearer ${session?.payload.token}`);
 
   return await apiFetch(path, { headers: updatedHeaders, ...restRequestInit });
 }
