@@ -20,11 +20,12 @@ import { PlusCircledIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import ArticleActions from "@/components/dashboard/article-actions";
+import { UserPermission } from "@/lib/definitions";
 
 const Aktuality = async () => {
   const session = await getSession();
   const articles = await getArticles(0);
-  if (session && (session.perms & 8) == 8) {
+  if (session && session.hasPermission(UserPermission.MANAGE_ARTICLES)) {
     return (
       <>
         <div className="flex justify-end">
