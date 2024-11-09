@@ -50,8 +50,8 @@ export async function deleteArticle(id: number) {
   revalidateTag("article");
 }
 
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  return await fetch(`${process.env.API_HOST}${path}`, init);
+export async function getBlob(id: number) {
+  return await apiFetch(`/blob/get?id=${id}`).then((res) => res.blob());
 }
 
 async function newBlob(data: ArrayBuffer) {
@@ -59,6 +59,10 @@ async function newBlob(data: ArrayBuffer) {
     method: "POST",
     body: data,
   }).then(async (res) => (await res.json()).id as number);
+}
+
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  return await fetch(`${process.env.API_HOST}${path}`, init);
 }
 
 async function authorizedApiFetch(
