@@ -1,7 +1,8 @@
-"server-only";
-import { JWTPayload, SignJWT, jwtVerify } from "jose";
+import "server-only";
+import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { UserPermission } from "./definitions";
+import { authorizedApiFetch } from "./api";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
@@ -60,16 +61,7 @@ export type SessionPayload = {
   expiresAt: Date;
 };
 
-class Session implements JWTPayload {
-  [propName: string]: unknown;
-  iss?: string | undefined;
-  sub?: string | undefined;
-  aud?: string | string[] | undefined;
-  jti?: string | undefined;
-  nbf?: number | undefined;
-  exp?: number | undefined;
-  iat?: number | undefined;
-
+class Session {
   payload: SessionPayload;
 
   constructor(payload: SessionPayload) {
@@ -81,11 +73,7 @@ class Session implements JWTPayload {
   }
 
   async isValid() {
-    const res = await fetch(`${process.env.API_HOST}/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${this.payload.token}`,
-      },
-    });
+    const res = await authorizedApiFetch("/auth/me");
 
     if (res.status == 400) {
       return false;

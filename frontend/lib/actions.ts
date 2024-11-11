@@ -1,7 +1,7 @@
 "use server";
 import { revalidateTag } from "next/cache";
 import { Article } from "./definitions";
-import { getSession } from "./session";
+import { authorizedApiFetch, apiFetch } from "./api";
 
 export async function getArticles(page: number) {
   return await apiFetch(`/article/articles?page=${page}`, {
@@ -59,21 +59,4 @@ async function newBlob(data: ArrayBuffer) {
     method: "POST",
     body: data,
   }).then(async (res) => (await res.json()).id as number);
-}
-
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  return await fetch(`${process.env.API_HOST}${path}`, init);
-}
-
-async function authorizedApiFetch(
-  path: string,
-  init: RequestInit = {},
-): Promise<Response> {
-  const session = await getSession();
-  const { headers, ...restRequestInit } = init;
-
-  const updatedHeaders = new Headers(headers);
-  updatedHeaders.append("Authorization", `Bearer ${session?.payload.token}`);
-
-  return await apiFetch(path, { headers: updatedHeaders, ...restRequestInit });
 }
